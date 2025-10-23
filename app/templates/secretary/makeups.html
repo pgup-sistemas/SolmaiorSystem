@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Reposições - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-indigo-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-redo mr-2"></i>Reposições de Aulas
+        </h1>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold mb-4">Solicitações de Reposição</h2>
+        {% if makeups %}
+            <div class="space-y-3">
+                {% for makeup in makeups %}
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-semibold">Aula Original</div>
+                            <div class="text-gray-600 text-sm">
+                                {{ makeup.original_lesson.lesson_date.strftime('%d/%m/%Y') }} 
+                                às {{ makeup.original_lesson.start_time.strftime('%H:%M') }}
+                            </div>
+                            <div class="text-gray-600 text-sm mt-2">
+                                <strong>Motivo:</strong> {{ makeup.reason }}
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-sm
+                            {% if makeup.status == 'pending' %}bg-yellow-200 text-yellow-800
+                            {% elif makeup.status == 'approved' %}bg-green-200 text-green-800
+                            {% else %}bg-red-200 text-red-800{% endif %}">
+                            {{ makeup.status }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600 text-center py-8">Nenhuma solicitação de reposição.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

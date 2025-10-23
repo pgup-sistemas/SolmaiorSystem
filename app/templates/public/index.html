@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
+    <div class="container mx-auto px-4 text-center">
+        <h1 class="text-5xl font-bold mb-6">Bem-vindo à Solmaior</h1>
+        <p class="text-2xl mb-8">Escola de Música de Excelência</p>
+        <p class="text-xl mb-10 max-w-3xl mx-auto">
+            Transforme sua paixão pela música em habilidade através de aulas personalizadas com professores experientes
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+            <a href="{{ url_for('public.trial_lesson') }}" 
+               class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 text-lg shadow-lg">
+                <i class="fas fa-calendar-check mr-2"></i>Agende sua Aula Experimental
+            </a>
+            <a href="{{ url_for('auth.register') }}" 
+               class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 text-lg">
+                <i class="fas fa-user-plus mr-2"></i>Cadastre-se
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+            <div class="text-blue-600 text-5xl mb-4">
+                <i class="fas fa-guitar"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">Diversos Instrumentos</h3>
+            <p class="text-gray-600">Piano, violão, guitarra, bateria, canto e muito mais</p>
+        </div>
+        
+        <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+            <div class="text-blue-600 text-5xl mb-4">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">Professores Qualificados</h3>
+            <p class="text-gray-600">Equipe experiente com formação acadêmica sólida</p>
+        </div>
+        
+        <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+            <div class="text-blue-600 text-5xl mb-4">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">Horários Flexíveis</h3>
+            <p class="text-gray-600">Escolha os melhores horários para suas aulas</p>
+        </div>
+    </div>
+    
+    {% if news %}
+    <div class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 text-center">Últimas Notícias</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% for post in news %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-2">{{ post.title }}</h3>
+                    <p class="text-gray-600 mb-4">{{ post.content[:150] }}...</p>
+                    <a href="{{ url_for('public.news_detail', id=post.id) }}" 
+                       class="text-blue-600 hover:text-blue-800 font-semibold">
+                        Ler mais <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="bg-blue-50 rounded-lg p-8 text-center">
+        <h2 class="text-3xl font-bold mb-4">Pronto para começar sua jornada musical?</h2>
+        <p class="text-xl text-gray-700 mb-6">
+            Agende agora mesmo sua aula experimental gratuita!
+        </p>
+        <a href="{{ url_for('public.trial_lesson') }}" 
+           class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 text-lg">
+            <i class="fas fa-calendar-check mr-2"></i>Agendar Aula Experimental
+        </a>
+    </div>
+</div>
+{% endblock %}

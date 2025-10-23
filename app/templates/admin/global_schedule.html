@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Agenda Global - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-blue-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-calendar-week mr-2"></i>Painel Macro Administrativo - Agenda Global
+        </h1>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 class="text-xl font-bold mb-4">Visão Semanal</h2>
+        <p class="text-gray-600 mb-4">Semana de {{ week_start.strftime('%d/%m/%Y') }}</p>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-2 border">Professor</th>
+                        <th class="px-4 py-2 border">Segunda</th>
+                        <th class="px-4 py-2 border">Terça</th>
+                        <th class="px-4 py-2 border">Quarta</th>
+                        <th class="px-4 py-2 border">Quinta</th>
+                        <th class="px-4 py-2 border">Sexta</th>
+                        <th class="px-4 py-2 border">Sábado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for teacher in teachers %}
+                    <tr>
+                        <td class="px-4 py-2 border font-semibold">{{ teacher.user.full_name }}</td>
+                        {% for day in range(6) %}
+                        <td class="px-4 py-2 border">
+                            {% set day_lessons = lessons|selectattr('teacher_id', 'equalto', teacher.id)|selectattr('lesson_date.weekday()', 'equalto', day)|list %}
+                            <span class="text-sm text-gray-600">{{ day_lessons|length }} aula(s)</span>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold mb-4">Ocupação de Salas</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for room in rooms %}
+            <div class="p-4 bg-gray-50 rounded">
+                <h3 class="font-semibold">{{ room.name }}</h3>
+                {% set room_lessons = lessons|selectattr('room_id', 'equalto', room.id)|list %}
+                <p class="text-sm text-gray-600">{{ room_lessons|length }} aula(s) agendadas</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

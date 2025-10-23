@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Admin - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-blue-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-tachometer-alt mr-2"></i>Painel Administrativo
+        </h1>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Total de Alunos</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ total_students }}</p>
+                </div>
+                <i class="fas fa-user-graduate text-4xl text-blue-200"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Total de Professores</p>
+                    <p class="text-3xl font-bold text-green-600">{{ total_teachers }}</p>
+                </div>
+                <i class="fas fa-chalkboard-teacher text-4xl text-green-200"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Salas Disponíveis</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ total_rooms }}</p>
+                </div>
+                <i class="fas fa-door-open text-4xl text-purple-200"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Aulas Experimentais</p>
+                    <p class="text-3xl font-bold text-orange-600">{{ pending_trials }}</p>
+                </div>
+                <i class="fas fa-calendar-check text-4xl text-orange-200"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold mb-4">Acesso Rápido</h2>
+            <div class="space-y-3">
+                <a href="{{ url_for('admin.global_schedule') }}" 
+                   class="block p-3 bg-blue-50 rounded hover:bg-blue-100 transition">
+                    <i class="fas fa-calendar-week text-blue-600 mr-2"></i>Agenda Global
+                </a>
+                <a href="{{ url_for('admin.users') }}" 
+                   class="block p-3 bg-green-50 rounded hover:bg-green-100 transition">
+                    <i class="fas fa-users text-green-600 mr-2"></i>Gerenciar Usuários
+                </a>
+                <a href="{{ url_for('admin.recitals') }}" 
+                   class="block p-3 bg-purple-50 rounded hover:bg-purple-100 transition">
+                    <i class="fas fa-music text-purple-600 mr-2"></i>Recitais e Eventos
+                </a>
+                <a href="{{ url_for('admin.news') }}" 
+                   class="block p-3 bg-orange-50 rounded hover:bg-orange-100 transition">
+                    <i class="fas fa-newspaper text-orange-600 mr-2"></i>Notícias
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold mb-4">Ações Rápidas</h2>
+            <div class="space-y-3">
+                <a href="{{ url_for('admin.create_user') }}" 
+                   class="block p-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-center">
+                    <i class="fas fa-user-plus mr-2"></i>Adicionar Usuário
+                </a>
+                <a href="{{ url_for('admin.create_room') }}" 
+                   class="block p-3 bg-green-600 text-white rounded hover:bg-green-700 transition text-center">
+                    <i class="fas fa-door-open mr-2"></i>Adicionar Sala
+                </a>
+                <a href="{{ url_for('admin.create_recital') }}" 
+                   class="block p-3 bg-purple-600 text-white rounded hover:bg-purple-700 transition text-center">
+                    <i class="fas fa-calendar-plus mr-2"></i>Criar Recital
+                </a>
+                <a href="{{ url_for('admin.trial_lessons') }}" 
+                   class="block p-3 bg-orange-600 text-white rounded hover:bg-orange-700 transition text-center">
+                    <i class="fas fa-list mr-2"></i>Ver Solicitações
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

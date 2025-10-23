@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Agenda Semanal - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-indigo-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-calendar-week mr-2"></i>Agenda Semanal
+        </h1>
+        <p class="mt-2">Semana de {{ week_start.strftime('%d/%m/%Y') }}</p>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 class="text-xl font-bold mb-4">Agendar Nova Aula</h2>
+        <form method="POST" action="{{ url_for('secretary.create_schedule') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Professor</label>
+                <select name="teacher_id" required class="w-full px-4 py-2 border rounded-lg">
+                    {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}">{{ teacher.user.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Aluno</label>
+                <select name="student_id" required class="w-full px-4 py-2 border rounded-lg">
+                    {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.user.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Sala</label>
+                <select name="room_id" required class="w-full px-4 py-2 border rounded-lg">
+                    {% for room in rooms %}
+                    <option value="{{ room.id }}">{{ room.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Data</label>
+                <input type="date" name="lesson_date" required class="w-full px-4 py-2 border rounded-lg">
+            </div>
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Início</label>
+                <input type="time" name="start_time" required class="w-full px-4 py-2 border rounded-lg">
+            </div>
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Fim</label>
+                <input type="time" name="end_time" required class="w-full px-4 py-2 border rounded-lg">
+            </div>
+            <div class="md:col-span-3">
+                <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700">
+                    <i class="fas fa-plus mr-2"></i>Agendar Aula
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold mb-4">Aulas da Semana</h2>
+        {% if lessons %}
+            <div class="space-y-2">
+                {% for lesson in lessons|sort(attribute='lesson_date') %}
+                <div class="p-3 bg-gray-50 rounded">
+                    <div class="grid grid-cols-4 gap-4">
+                        <div>
+                            <span class="text-sm text-gray-600">Data:</span>
+                            <div class="font-semibold">{{ lesson.lesson_date.strftime('%d/%m') }}</div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">Horário:</span>
+                            <div class="font-semibold">{{ lesson.start_time.strftime('%H:%M') }}</div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">Professor:</span>
+                            <div class="font-semibold">{{ lesson.teacher.user.full_name }}</div>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">Aluno:</span>
+                            <div class="font-semibold">{{ lesson.student.user.full_name }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600">Nenhuma aula agendada esta semana.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

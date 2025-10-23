@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Aluno - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-purple-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-graduation-cap mr-2"></i>Painel do Aluno
+        </h1>
+        <p class="mt-2">Bem-vindo(a), {{ current_user.full_name }}</p>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold mb-4">Acesso Rápido</h2>
+            <div class="space-y-3">
+                <a href="{{ url_for('student.schedule') }}" 
+                   class="block p-3 bg-purple-50 rounded hover:bg-purple-100 transition">
+                    <i class="fas fa-calendar-alt text-purple-600 mr-2"></i>Minhas Aulas
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold mb-4">Próximas Aulas</h2>
+            {% if upcoming_lessons %}
+                <div class="space-y-2">
+                    {% for lesson in upcoming_lessons[:5] %}
+                    <div class="p-2 bg-gray-50 rounded text-sm">
+                        <div class="font-semibold">{{ lesson.teacher.user.full_name }}</div>
+                        <div class="text-gray-600">
+                            {{ lesson.lesson_date.strftime('%d/%m') }} às {{ lesson.start_time.strftime('%H:%M') }}
+                            - Sala {{ lesson.room.name }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-600">Nenhuma aula agendada</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

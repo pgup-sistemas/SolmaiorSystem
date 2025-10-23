@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-blue-600 text-white py-12">
+    <div class="container mx-auto px-4">
+        <h1 class="text-4xl font-bold">{{ post.title }}</h1>
+        <p class="text-lg mt-2">
+            <i class="fas fa-calendar mr-1"></i>
+            {{ post.published_at.strftime('%d/%m/%Y às %H:%M') if post.published_at else 'Data não disponível' }}
+        </p>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-16">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <div class="prose max-w-none">
+                {{ post.content|safe }}
+            </div>
+        </div>
+        
+        <div class="mt-8">
+            <a href="{{ url_for('public.news') }}" 
+               class="text-blue-600 hover:text-blue-800 font-semibold">
+                <i class="fas fa-arrow-left mr-2"></i>Voltar para notícias
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

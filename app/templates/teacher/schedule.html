@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Agenda - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-green-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-calendar-alt mr-2"></i>Minha Agenda
+        </h1>
+        <p class="mt-2">Semana de {{ week_start.strftime('%d/%m/%Y') }}</p>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        {% if lessons %}
+            <div class="space-y-3">
+                {% for lesson in lessons|sort(attribute='lesson_date') %}
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-semibold text-lg">{{ lesson.student.user.full_name }}</div>
+                            <div class="text-gray-600">
+                                <i class="fas fa-calendar mr-1"></i>
+                                {{ lesson.lesson_date.strftime('%d/%m/%Y') }} 
+                                às {{ lesson.start_time.strftime('%H:%M') }} - {{ lesson.end_time.strftime('%H:%M') }}
+                            </div>
+                            <div class="text-gray-600">
+                                <i class="fas fa-door-open mr-1"></i>Sala {{ lesson.room.name }}
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm">
+                            {{ lesson.status }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600 text-center py-8">Nenhuma aula agendada esta semana.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

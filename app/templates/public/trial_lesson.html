@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Aula Experimental - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-blue-600 text-white py-12">
+    <div class="container mx-auto px-4">
+        <h1 class="text-4xl font-bold text-center">Aula Experimental Gratuita</h1>
+        <p class="text-center text-xl mt-4">Experimente uma aula sem compromisso!</p>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-16">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold mb-6 text-center">Preencha o formulário abaixo</h2>
+            
+            <form method="POST" action="{{ url_for('public.trial_lesson') }}">
+                <div class="mb-4">
+                    <label for="full_name" class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-user mr-1"></i> Nome Completo *
+                    </label>
+                    <input type="text" id="full_name" name="full_name" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="email" class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-envelope mr-1"></i> Email *
+                    </label>
+                    <input type="email" id="email" name="email" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="phone" class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-phone mr-1"></i> Telefone *
+                    </label>
+                    <input type="tel" id="phone" name="phone" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="instrument" class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-guitar mr-1"></i> Instrumento de Interesse *
+                    </label>
+                    <select id="instrument" name="instrument" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Selecione...</option>
+                        <option value="Piano">Piano</option>
+                        <option value="Violão">Violão</option>
+                        <option value="Guitarra">Guitarra</option>
+                        <option value="Bateria">Bateria</option>
+                        <option value="Violino">Violino</option>
+                        <option value="Canto">Canto</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="message" class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-comment mr-1"></i> Mensagem (opcional)
+                    </label>
+                    <textarea id="message" name="message" rows="4"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition text-lg">
+                    <i class="fas fa-paper-plane mr-2"></i>Enviar Solicitação
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Secretaria - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-indigo-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-calendar-alt mr-2"></i>Painel da Secretaria
+        </h1>
+        <p class="mt-2">Bem-vindo(a), {{ current_user.full_name }}</p>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-gray-600">Aulas Hoje</p>
+                    <p class="text-3xl font-bold text-indigo-600">{{ todays_lessons }}</p>
+                </div>
+                <i class="fas fa-calendar-day text-4xl text-indigo-200"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-gray-600">Reposições Pendentes</p>
+                    <p class="text-3xl font-bold text-orange-600">{{ pending_makeups }}</p>
+                </div>
+                <i class="fas fa-redo text-4xl text-orange-200"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-bold mb-4">Acesso Rápido</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <a href="{{ url_for('secretary.schedule') }}" 
+               class="block p-3 bg-indigo-50 rounded hover:bg-indigo-100 transition text-center">
+                <i class="fas fa-calendar-week text-indigo-600 mr-2"></i>Agenda Semanal
+            </a>
+            <a href="{{ url_for('secretary.makeups') }}" 
+               class="block p-3 bg-orange-50 rounded hover:bg-orange-100 transition text-center">
+                <i class="fas fa-redo text-orange-600 mr-2"></i>Reposições
+            </a>
+            <a href="{{ url_for('admin.trial_lessons') }}" 
+               class="block p-3 bg-green-50 rounded hover:bg-green-100 transition text-center">
+                <i class="fas fa-list text-green-600 mr-2"></i>Solicitações
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
