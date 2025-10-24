@@ -1,0 +1,94 @@
+
+{% extends "base.html" %}
+
+{% block title %}Meu Perfil - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-blue-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <nav class="text-sm mb-4">
+            <a href="{{ url_for('public.index') }}" class="hover:underline">Início</a>
+            <span class="mx-2">/</span>
+            <span>Meu Perfil</span>
+        </nav>
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-user-circle mr-2"></i>Meu Perfil
+        </h1>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Avatar -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="text-center">
+                <div class="mb-4">
+                    {% if current_user.avatar_url %}
+                    <img src="{{ current_user.avatar_url }}" alt="Avatar" class="w-32 h-32 rounded-full mx-auto object-cover">
+                    {% else %}
+                    <div class="w-32 h-32 rounded-full bg-blue-600 text-white flex items-center justify-center text-4xl mx-auto">
+                        {{ current_user.full_name[0].upper() }}
+                    </div>
+                    {% endif %}
+                </div>
+                <h2 class="text-xl font-bold">{{ current_user.full_name }}</h2>
+                <p class="text-gray-600">{{ current_user.role|title }}</p>
+            </div>
+        </div>
+        
+        <!-- Dados Pessoais -->
+        <div class="md:col-span-2 bg-white rounded-lg shadow p-6">
+            <h3 class="text-xl font-bold mb-4">Dados Pessoais</h3>
+            <form method="POST" action="{{ url_for('profile.update') }}" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-bold mb-2">Avatar</label>
+                    <input type="file" name="avatar" accept="image/*" class="w-full border rounded px-3 py-2">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-bold mb-2">Nome Completo</label>
+                    <input type="text" name="full_name" value="{{ current_user.full_name }}" required class="w-full border rounded px-3 py-2">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-bold mb-2">Email</label>
+                    <input type="email" value="{{ current_user.email }}" disabled class="w-full border rounded px-3 py-2 bg-gray-100">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-bold mb-2">Telefone</label>
+                    <input type="tel" name="phone" value="{{ current_user.phone or '' }}" class="w-full border rounded px-3 py-2">
+                </div>
+                
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                    <i class="fas fa-save mr-2"></i>Salvar Alterações
+                </button>
+            </form>
+            
+            <hr class="my-6">
+            
+            <h3 class="text-xl font-bold mb-4">Alterar Senha</h3>
+            <form method="POST" action="{{ url_for('profile.change_password') }}">
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-bold mb-2">Senha Atual</label>
+                    <input type="password" name="current_password" required class="w-full border rounded px-3 py-2">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-bold mb-2">Nova Senha</label>
+                    <input type="password" name="new_password" required class="w-full border rounded px-3 py-2">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-bold mb-2">Confirmar Nova Senha</label>
+                    <input type="password" name="confirm_password" required class="w-full border rounded px-3 py-2">
+                </div>
+                
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+                    <i class="fas fa-key mr-2"></i>Alterar Senha
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

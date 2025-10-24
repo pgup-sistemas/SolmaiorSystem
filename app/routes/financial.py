@@ -150,13 +150,15 @@ def generate_receipt(payment_id):
     styles = getSampleStyleSheet()
     
     # Cabeçalho
-    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor('#1e40af'))
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor('#1e40af'), alignment=1)
+    elements.append(Paragraph('ESCOLA DE MÚSICA SOLMAIOR', title_style))
+    elements.append(Spacer(1, 6))
     elements.append(Paragraph('RECIBO DE PAGAMENTO', title_style))
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 20))
     
     # Informações do recibo
     info_data = [
-        ['Recibo Nº:', payment.receipt_number],
+        ['Recibo Nº:', payment.receipt_number or f'REC-{payment.id:05d}'],
         ['Data de Pagamento:', payment.payment_date.strftime('%d/%m/%Y')],
         ['Aluno:', payment.enrollment.student.user.full_name],
         ['Referência:', payment.reference_month.strftime('%m/%Y')],
@@ -167,10 +169,48 @@ def generate_receipt(payment_id):
         ['Forma de Pagamento:', payment.payment_method or 'Não especificado']
     ]
     
-    table = Table(info_data, colWidths=[120, 300])
+    table = Table(info_data, colWidths=[150, 300])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey)
+    ]))
+    
+    elements.append(table)
+    elements.append(Spacer(1, 30))
+    
+    # Observações
+    if payment.notes:
+        obs_style = ParagraphStyle('Obs', parent=styles['Normal'], fontSize=9)
+        elements.append(Paragraph(f'<b>Observações:</b> {payment.notes}', obs_style))
+        elements.append(Spacer(1, 20))
+    
+    # Assinatura
+    elements.append(Spacer(1, 40))
+    signature_data = [
+        ['_' * 50],
+        ['Assinatura do Responsável']
+    ]
+    signature_table = Table(signature_data, colWidths=[450])
+    signature_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9)
+    ]))
+    elements.append(signature_table)
+    
+    doc.build(elements)
+    buffer.seek(0)
+    
+    return send_file(
+        buffer,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=f'recibo_{payment.receipt_number or payment.id}.pdf'
+    )ors.black),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),

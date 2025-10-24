@@ -61,7 +61,25 @@ def migrate_students_table():
             print(f'✗ Erro na migração: {str(e)}')
             raise
 
+def migrate_users_table():
+    """Adiciona campo de avatar à tabela users"""
+    with app.app_context():
+        try:
+            db.session.execute(text("""
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
+            """))
+            
+            db.session.commit()
+            print('✓ Migração da tabela users concluída com sucesso!')
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f'✗ Erro na migração: {str(e)}')
+            raise
+
 if __name__ == '__main__':
     print('Iniciando migração do banco de dados...')
     migrate_students_table()
+    migrate_users_table()
     print('Migração finalizada!')

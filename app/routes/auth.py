@@ -96,3 +96,23 @@ def register():
             return redirect(url_for('auth.register'))
     
     return render_template('auth/register.html')
+
+@bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('public.index'))
+    
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            # Aqui você pode implementar o envio de email
+            # Por enquanto, vamos apenas mostrar uma mensagem
+            flash('Se este email estiver cadastrado, você receberá instruções para recuperar sua senha.', 'success')
+        else:
+            flash('Se este email estiver cadastrado, você receberá instruções para recuperar sua senha.', 'success')
+        
+        return redirect(url_for('auth.login'))
+    
+    return render_template('auth/forgot_password.html')
