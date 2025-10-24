@@ -191,3 +191,66 @@ class TrialLesson(db.Model):
     message = db.Column(db.Text)
     status = db.Column(db.String(20), default='pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Enrollment(db.Model):
+    __tablename__ = 'enrollments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    plan_type = db.Column(db.String(50), nullable=False)
+    monthly_value = db.Column(db.Float, nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date)
+    status = db.Column(db.String(20), default='active')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    student = db.relationship('Student', backref=db.backref('enrollments', lazy='dynamic'))
+    payments = db.relationship('Payment', backref='enrollment', lazy='dynamic', cascade='all, delete-orphan')
+
+class Payment(db.Model):
+    __tablename__ = 'payments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollments.id'), nullable=False)
+    reference_month = db.Column(db.Date, nullable=False)
+    due_date = db.Column(db.Date, nullable=False)
+    payment_date = db.Column(db.Date)
+    amount = db.Column(db.Float, nullable=False)
+    discount = db.Column(db.Float, default=0.0)
+    late_fee = db.Column(db.Float, default=0.0)
+    total_amount = db.Column(db.Float, nullable=False)
+    payment_method = db.Column(db.String(50))
+    status = db.Column(db.String(20), default='pending')
+    receipt_number = db.Column(db.String(50), unique=True)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    __table_args__ = (
+        db.Index('idx_payment_status', 'status'),
+        db.Index('idx_payment_due_date', 'due_date'),
+    )
+
+class Document(db.Model):
+    __tablename__ = 'documents'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    file_name = db.Column(db.String(255), nullable=False)
+    file_path = db.Column(db.String(500), nullable=False)
+    file_type = db.Column(db.String(50))
+    file_size = db.Column(db.Integer)
+    category = db.Column(db.String(50), nullable=False)
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    related_student_id = db.Column(db.Integer, db.ForeignKey('students.id'))
+    related_teacher_id = db.Column(db.Integer, db.ForeignKey('teachers.id'))
+    is_public = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    uploader = db.relationship('User', backref=db.backref('uploaded_documents', lazy='dynamic'))
+    related_student = db.relationship('Student', backref=db.backref('documents', lazy='dynamic'))
+    related_teacher = db.relationship('Teacher', backref=db.backref('documents', lazy='dynamic'))
+    
+    __table_args__ = (
+        db.Index('idx_document_category', 'category'),
+    )
