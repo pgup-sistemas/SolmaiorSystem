@@ -176,6 +176,196 @@ def migrate_enrollments_table():
             print(f'✗ Erro na migração de enrollments: {str(e)}')
             return False
 
+def migrate_news_posts_table():
+    """Adiciona novos campos à tabela news_posts"""
+    with app.app_context():
+        print('\n🔄 Migrando tabela news_posts...')
+        try:
+            columns_to_add = [
+                ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+            ]
+            
+            added_count = 0
+            for col_name, col_type in columns_to_add:
+                if not column_exists('news_posts', col_name):
+                    db.session.execute(text(f"ALTER TABLE news_posts ADD COLUMN {col_name} {col_type}"))
+                    print(f'  ✓ Coluna {col_name} adicionada')
+                    added_count += 1
+                else:
+                    print(f'  ⊙ Coluna {col_name} já existe')
+            
+            db.session.commit()
+            print(f'✅ Migração da tabela news_posts concluída! ({added_count} colunas adicionadas)')
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f'✗ Erro na migração de news_posts: {str(e)}')
+            return False
+
+def migrate_payments_table():
+    """Adiciona novos campos à tabela payments"""
+    with app.app_context():
+        print('\n🔄 Migrando tabela payments...')
+        try:
+            columns_to_add = [
+                ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+                ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+            ]
+            
+            added_count = 0
+            for col_name, col_type in columns_to_add:
+                if not column_exists('payments', col_name):
+                    db.session.execute(text(f"ALTER TABLE payments ADD COLUMN {col_name} {col_type}"))
+                    print(f'  ✓ Coluna {col_name} adicionada')
+                    added_count += 1
+                else:
+                    print(f'  ⊙ Coluna {col_name} já existe')
+            
+            db.session.commit()
+            print(f'✅ Migração da tabela payments concluída! ({added_count} colunas adicionadas)')
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f'✗ Erro na migração de payments: {str(e)}')
+            return False
+
+def migrate_rooms_table():
+    """Adiciona novos campos à tabela rooms"""
+    with app.app_context():
+        print('\n🔄 Migrando tabela rooms...')
+        try:
+            columns_to_add = [
+                ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+                ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+            ]
+            
+            added_count = 0
+            for col_name, col_type in columns_to_add:
+                if not column_exists('rooms', col_name):
+                    db.session.execute(text(f"ALTER TABLE rooms ADD COLUMN {col_name} {col_type}"))
+                    print(f'  ✓ Coluna {col_name} adicionada')
+                    added_count += 1
+                else:
+                    print(f'  ⊙ Coluna {col_name} já existe')
+            
+            db.session.commit()
+            print(f'✅ Migração da tabela rooms concluída! ({added_count} colunas adicionadas)')
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f'✗ Erro na migração de rooms: {str(e)}')
+            return False
+
+def migrate_recitals_table():
+    """Adiciona novos campos à tabela recitals"""
+    with app.app_context():
+        print('\n🔄 Migrando tabela recitals...')
+        try:
+            columns_to_add = [
+                ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+                ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+            ]
+            
+            added_count = 0
+            for col_name, col_type in columns_to_add:
+                if not column_exists('recitals', col_name):
+                    db.session.execute(text(f"ALTER TABLE recitals ADD COLUMN {col_name} {col_type}"))
+                    print(f'  ✓ Coluna {col_name} adicionada')
+                    added_count += 1
+                else:
+                    print(f'  ⊙ Coluna {col_name} já existe')
+            
+            db.session.commit()
+            print(f'✅ Migração da tabela recitals concluída! ({added_count} colunas adicionadas)')
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f'✗ Erro na migração de recitals: {str(e)}')
+            return False
+
+def migrate_documents_table():
+    """Adiciona novos campos à tabela documents"""
+    with app.app_context():
+        print('\n🔄 Migrando tabela documents...')
+        try:
+            columns_to_add = [
+                ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+                ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+            ]
+            
+            added_count = 0
+            for col_name, col_type in columns_to_add:
+                if not column_exists('documents', col_name):
+                    db.session.execute(text(f"ALTER TABLE documents ADD COLUMN {col_name} {col_type}"))
+                    print(f'  ✓ Coluna {col_name} adicionada')
+                    added_count += 1
+                else:
+                    print(f'  ⊙ Coluna {col_name} já existe')
+            
+            db.session.commit()
+            print(f'✅ Migração da tabela documents concluída! ({added_count} colunas adicionadas)')
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f'✗ Erro na migração de documents: {str(e)}')
+            return False
+
+def migrate_trial_lessons_table():
+    """Adiciona novos campos à tabela trial_lessons"""
+    with app.app_context():
+        print('\n🔄 Migrando tabela trial_lessons...')
+        try:
+            columns_to_add = [
+                ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+            ]
+            
+            added_count = 0
+            for col_name, col_type in columns_to_add:
+                if not column_exists('trial_lessons', col_name):
+                    db.session.execute(text(f"ALTER TABLE trial_lessons ADD COLUMN {col_name} {col_type}"))
+                    print(f'  ✓ Coluna {col_name} adicionada')
+                    added_count += 1
+                else:
+                    print(f'  ⊙ Coluna {col_name} já existe')
+            
+            db.session.commit()
+            print(f'✅ Migração da tabela trial_lessons concluída! ({added_count} colunas adicionadas)')
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f'✗ Erro na migração de trial_lessons: {str(e)}')
+            return False
+
+def migrate_other_tables():
+    """Adiciona novos campos às demais tabelas"""
+    with app.app_context():
+        print('\n🔄 Migrando tabelas auxiliares...')
+        try:
+            tables_columns = [
+                ('teacher_availability', [('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')]),
+                ('recital_performances', [('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')]),
+                ('recital_participants', [('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')]),
+                ('makeup_lessons', [('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'), ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')]),
+            ]
+            
+            total_added = 0
+            for table_name, columns in tables_columns:
+                for col_name, col_type in columns:
+                    if not column_exists(table_name, col_name):
+                        db.session.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"))
+                        print(f'  ✓ Coluna {table_name}.{col_name} adicionada')
+                        total_added += 1
+                    else:
+                        print(f'  ⊙ Coluna {table_name}.{col_name} já existe')
+            
+            db.session.commit()
+            print(f'✅ Migração das tabelas auxiliares concluída! ({total_added} colunas adicionadas)')
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f'✗ Erro na migração das tabelas auxiliares: {str(e)}')
+            return False
+
 def verify_migrations():
     """Verifica se as migrações foram aplicadas corretamente"""
     with app.app_context():
@@ -208,34 +398,37 @@ def verify_migrations():
 
 if __name__ == '__main__':
     print('=' * 60)
-    print('🚀 Iniciando migração do banco de dados...')
+    print('🚀 Iniciando migração completa do banco de dados...')
     print('=' * 60)
     
     success = True
     
     # Executar todas as migrações
-    if not migrate_users_table():
-        success = False
+    migrations = [
+        migrate_users_table,
+        migrate_students_table,
+        migrate_teachers_table,
+        migrate_lesson_schedule_table,
+        migrate_enrollments_table,
+        migrate_news_posts_table,
+        migrate_payments_table,
+        migrate_rooms_table,
+        migrate_recitals_table,
+        migrate_documents_table,
+        migrate_trial_lessons_table,
+        migrate_other_tables,
+    ]
     
-    if not migrate_students_table():
-        success = False
-    
-    if not migrate_teachers_table():
-        success = False
-    
-    if not migrate_lesson_schedule_table():
-        success = False
-    
-    if not migrate_enrollments_table():
-        success = False
+    for migration in migrations:
+        if not migration():
+            success = False
     
     # Verificar resultado
     print('\n' + '=' * 60)
-    if verify_migrations():
+    if success:
         print('✅ TODAS AS MIGRAÇÕES FORAM APLICADAS COM SUCESSO!')
     else:
         print('⚠️  ALGUMAS MIGRAÇÕES FALHARAM!')
-        success = False
     print('=' * 60)
     
     if not success:
