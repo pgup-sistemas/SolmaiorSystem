@@ -210,25 +210,7 @@ def generate_receipt(payment_id):
         mimetype='application/pdf',
         as_attachment=True,
         download_name=f'recibo_{payment.receipt_number or payment.id}.pdf'
-    )ors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
-    
-    elements.append(table)
-    elements.append(Spacer(1, 30))
-    
-    # Assinatura
-    elements.append(Paragraph('_______________________________________', styles['Normal']))
-    elements.append(Paragraph('Escola de Música Sol Maior', styles['Normal']))
-    
-    doc.build(elements)
-    buffer.seek(0)
-    
-    return send_file(buffer, as_attachment=True, download_name=f'recibo_{payment.receipt_number}.pdf', mimetype='application/pdf')
+    )
 
 @bp.route('/reports/overdue')
 @login_required
