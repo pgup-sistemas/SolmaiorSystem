@@ -33,10 +33,25 @@
                         {{ post.created_at.strftime('%d/%m/%Y') }}
                     </div>
                 </div>
-                <span class="px-3 py-1 rounded-full text-sm
-                    {% if post.is_published %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
-                    {% if post.is_published %}Publicado{% else %}Rascunho{% endif %}
-                </span>
+                <div class="flex flex-col gap-2">
+                    <span class="px-3 py-1 rounded-full text-sm text-center
+                        {% if post.is_published %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {% if post.is_published %}Publicado{% else %}Rascunho{% endif %}
+                    </span>
+                    <div class="flex gap-2">
+                        <a href="{{ url_for('admin.edit_news', id=post.id) }}" 
+                           class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 text-sm">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <form method="POST" action="{{ url_for('admin.delete_news', id=post.id) }}" 
+                              onsubmit="return confirm('Tem certeza que deseja excluir esta notícia?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700 text-sm">
+                                <i class="fas fa-trash"></i> Excluir
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
         {% else %}

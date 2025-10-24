@@ -201,9 +201,114 @@ def create_news():
     
     return render_template('admin/create_news.html')
 
+@bp.route('/news/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_news(id):
+    post = NewsPost.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        post.title = request.form.get('title')
+        post.content = request.form.get('content')
+        post.post_type = request.form.get('post_type', 'news')
+        
+        was_published = post.is_published
+        post.is_published = request.form.get('is_published') == 'on'
+        
+        if post.is_published and not was_published:
+            post.published_at = datetime.utcnow()
+        
+        db.session.commit()
+        flash('Notícia atualizada com sucesso!', 'success')
+        return redirect(url_for('admin.news'))
+    
+    return render_template('admin/edit_news.html', post=post)
+
+@bp.route('/news/<int:id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_news(id):
+    post = NewsPost.query.get_or_404(id)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Notícia excluída com sucesso!', 'success')
+    return redirect(url_for('admin.news'))
+
 @bp.route('/trial-lessons')
 @login_required
 @admin_required
 def trial_lessons():
     trials = TrialLesson.query.order_by(TrialLesson.created_at.desc()).all()
     return render_template('admin/trial_lessons.html', trials=trials)
+
+@bp.route('/users/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_user(id):
+    user = User.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        user.full_name = request.form.get('full_name')
+        user.email = request.form.get('email')
+        user.phone = request.form.get('phone')
+        user.is_active = request.form.get('is_active') == 'on'
+        
+        new_password = request.form.get('password')
+        if new_password:
+            user.set_password(new_password)
+        
+        db.session.commit()
+        flash('Usuário atualizado com sucesso!', 'success')
+        return redirect(url_for('admin.users'))
+    
+    return render_template('admin/edit_user.html', user=user)
+
+@bp.route('/users/<int:id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(id):
+    if id == current_user.id:
+        flash('Você não pode excluir seu próprio usuário!', 'error')
+        return redirect(url_for('admin.users'))
+    
+    user = User.query.get_or_404(id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('Usuário excluído com sucesso!', 'success')
+    return redirect(url_for('admin.users'))
+
+@bp.route('/students/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_student(id):
+    student = Student.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        student.instrument = request.form.get('instrument')
+        student.level = request.form.get('level')
+        student.guardian_name = request.form.get('guardian_name')
+        student.guardian_phone = request.form.get('guardian_phone')
+        student.guardian_email = request.form.get('guardian_email')
+        student.guardian_cpf = request.form.get('guardian_cpf')
+        student.birth_date = datetime.strptime(request.form.get('birth_date'), '%Y-%m-%d').date() if request.form.get('birth_date') else None
+        student.cpf = request.form.get('cpf')
+        student.rg = request.form.get('rg')
+        student.address = request.form.get('address')
+        student.city = request.form.get('city')
+        student.state = request.form.get('state')
+        student.zip_code = request.form.get('zip_code')
+        student.course_modality = request.form.get('course_modality')
+        student.weekly_lessons = request.form.get('weekly_lessons', type=int)
+        student.lesson_duration = request.form.get('lesson_duration', type=int)
+        student.preferred_schedule = request.form.get('preferred_schedule')
+        student.medical_info = request.form.get('medical_info')
+        student.special_needs = request.form.get('special_needs')
+        student.previous_experience = request.form.get('previous_experience')
+        student.goals = request.form.get('goals')
+        student.notes = request.form.get('notes')
+        
+        db.session.commit()
+        flash('Dados do aluno atualizados com sucesso!', 'success')
+        return redirect(url_for('admin.users'))
+    
+    return render_template('admin/edit_student.html', student=student)

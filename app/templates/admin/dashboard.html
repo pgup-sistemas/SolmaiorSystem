@@ -22,7 +22,7 @@
                 <i class="fas fa-user-graduate text-4xl text-blue-200"></i>
             </div>
         </div>
-        
+
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
@@ -32,7 +32,7 @@
                 <i class="fas fa-chalkboard-teacher text-4xl text-green-200"></i>
             </div>
         </div>
-        
+
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
@@ -42,7 +42,7 @@
                 <i class="fas fa-door-open text-4xl text-purple-200"></i>
             </div>
         </div>
-        
+
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
@@ -53,7 +53,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-bold mb-4">Acesso Rápido</h2>
@@ -63,28 +63,36 @@
                     <i class="fas fa-calendar-week text-blue-600 mr-2"></i>Agenda Global
                 </a>
                 <a href="{{ url_for('admin.users') }}" 
+                   class="block p-3 bg-blue-50 rounded hover:bg-blue-100 transition">
+                    <i class="fas fa-users text-blue-600 mr-2"></i>Gerenciar Usuários
+                </a>
+                <a href="{{ url_for('admin.rooms') }}" 
                    class="block p-3 bg-green-50 rounded hover:bg-green-100 transition">
-                    <i class="fas fa-users text-green-600 mr-2"></i>Gerenciar Usuários
-                </a>
-                <a href="{{ url_for('financial.dashboard') }}" 
-                   class="block p-3 bg-emerald-50 rounded hover:bg-emerald-100 transition">
-                    <i class="fas fa-dollar-sign text-emerald-600 mr-2"></i>Financeiro
-                </a>
-                <a href="{{ url_for('documents.index') }}" 
-                   class="block p-3 bg-indigo-50 rounded hover:bg-indigo-100 transition">
-                    <i class="fas fa-folder-open text-indigo-600 mr-2"></i>Documentos
+                    <i class="fas fa-door-open text-green-600 mr-2"></i>Gerenciar Salas
                 </a>
                 <a href="{{ url_for('admin.recitals') }}" 
                    class="block p-3 bg-purple-50 rounded hover:bg-purple-100 transition">
-                    <i class="fas fa-music text-purple-600 mr-2"></i>Recitais e Eventos
+                    <i class="fas fa-music text-purple-600 mr-2"></i>Gerenciar Recitals
                 </a>
                 <a href="{{ url_for('admin.news') }}" 
-                   class="block p-3 bg-orange-50 rounded hover:bg-orange-100 transition">
-                    <i class="fas fa-newspaper text-orange-600 mr-2"></i>Notícias
+                   class="block p-3 bg-yellow-50 rounded hover:bg-yellow-100 transition">
+                    <i class="fas fa-newspaper text-yellow-600 mr-2"></i>Gerenciar Notícias
+                </a>
+                <a href="{{ url_for('admin.trial_lessons') }}" 
+                   class="block p-3 bg-red-50 rounded hover:bg-red-100 transition">
+                    <i class="fas fa-clipboard-list text-red-600 mr-2"></i>Aulas Experimentais
+                </a>
+                <a href="{{ url_for('financial.dashboard') }}" 
+                   class="block p-3 bg-indigo-50 rounded hover:bg-indigo-100 transition">
+                    <i class="fas fa-dollar-sign text-indigo-600 mr-2"></i>Módulo Financeiro
+                </a>
+                <a href="{{ url_for('documents.index') }}" 
+                   class="block p-3 bg-pink-50 rounded hover:bg-pink-100 transition">
+                    <i class="fas fa-file-alt text-pink-600 mr-2"></i>Documentos
                 </a>
             </div>
         </div>
-        
+
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-bold mb-4">Ações Rápidas</h2>
             <div class="space-y-3">

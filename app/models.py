@@ -53,8 +53,36 @@ class Student(db.Model):
     instrument = db.Column(db.String(100), nullable=False)
     level = db.Column(db.String(50))
     enrollment_date = db.Column(db.Date, default=datetime.utcnow)
+    
+    # Dados do Responsável
     guardian_name = db.Column(db.String(200))
     guardian_phone = db.Column(db.String(20))
+    guardian_email = db.Column(db.String(120))
+    guardian_cpf = db.Column(db.String(14))
+    
+    # Dados Pessoais
+    birth_date = db.Column(db.Date)
+    cpf = db.Column(db.String(14))
+    rg = db.Column(db.String(20))
+    address = db.Column(db.String(300))
+    city = db.Column(db.String(100))
+    state = db.Column(db.String(2))
+    zip_code = db.Column(db.String(10))
+    
+    # Informações do Curso
+    course_modality = db.Column(db.String(50))  # Individual, Grupo, Online
+    weekly_lessons = db.Column(db.Integer, default=1)
+    lesson_duration = db.Column(db.Integer, default=60)  # minutos
+    preferred_schedule = db.Column(db.String(100))
+    
+    # Outras informações
+    medical_info = db.Column(db.Text)
+    special_needs = db.Column(db.Text)
+    previous_experience = db.Column(db.Text)
+    goals = db.Column(db.Text)
+    photo_url = db.Column(db.String(500))
+    is_active = db.Column(db.Boolean, default=True)
+    notes = db.Column(db.Text)
     
     user = db.relationship('User', backref=db.backref('student_profile', uselist=False))
     lessons = db.relationship('LessonSchedule', backref='student', lazy='dynamic')
