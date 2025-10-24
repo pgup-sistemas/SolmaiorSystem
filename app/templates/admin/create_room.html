@@ -8,6 +8,15 @@
         <h1 class="text-3xl font-bold">
             <i class="fas fa-door-open mr-2"></i>Criar Nova Sala
         </h1>
+        <nav class="text-sm mt-2 opacity-90">
+            <a href="{{ url_for('public.index') }}" class="hover:underline">Início</a>
+            <span class="mx-2">/</span>
+            <a href="{{ url_for('admin.dashboard') }}" class="hover:underline">Painel Admin</a>
+            <span class="mx-2">/</span>
+            <a href="{{ url_for('admin.rooms') }}" class="hover:underline">Salas</a>
+            <span class="mx-2">/</span>
+            <span>Criar</span>
+        </nav>
     </div>
 </div>
 
