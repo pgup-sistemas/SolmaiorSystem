@@ -1,0 +1,111 @@
+
+{% extends "base.html" %}
+
+{% block title %}Pagamentos - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-blue-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-money-check mr-2"></i>Gerenciar Pagamentos
+        </h1>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6 flex gap-3">
+        <a href="?status=all" class="px-4 py-2 rounded {% if status_filter == 'all' %}bg-blue-600 text-white{% else %}bg-gray-200{% endif %}">Todos</a>
+        <a href="?status=pending" class="px-4 py-2 rounded {% if status_filter == 'pending' %}bg-orange-600 text-white{% else %}bg-gray-200{% endif %}">Pendentes</a>
+        <a href="?status=paid" class="px-4 py-2 rounded {% if status_filter == 'paid' %}bg-green-600 text-white{% else %}bg-gray-200{% endif %}">Pagos</a>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Referência</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vencimento</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for payment in payments %}
+                <tr>
+                    <td class="px-6 py-4">{{ payment.enrollment.student.user.full_name }}</td>
+                    <td class="px-6 py-4">{{ payment.reference_month.strftime('%m/%Y') }}</td>
+                    <td class="px-6 py-4">{{ payment.due_date.strftime('%d/%m/%Y') }}</td>
+                    <td class="px-6 py-4">R$ {{ "%.2f"|format(payment.total_amount) }}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-sm
+                            {% if payment.status == 'paid' %}bg-green-100 text-green-800
+                            {% elif payment.status == 'pending' %}bg-orange-100 text-orange-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ payment.status }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if payment.status == 'pending' %}
+                        <button onclick="openPaymentModal({{ payment.id }})" class="text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-check-circle"></i> Registrar
+                        </button>
+                        {% else %}
+                        <a href="{{ url_for('financial.generate_receipt', payment_id=payment.id) }}" class="text-green-600 hover:text-green-800">
+                            <i class="fas fa-file-pdf"></i> Recibo
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="paymentModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <h2 class="text-xl font-bold mb-4">Registrar Pagamento</h2>
+        <form id="paymentForm" method="POST">
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Data do Pagamento</label>
+                <input type="date" name="payment_date" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Forma de Pagamento</label>
+                <select name="payment_method" class="w-full border rounded px-3 py-2">
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="Cartão de Débito">Cartão de Débito</option>
+                    <option value="PIX">PIX</option>
+                    <option value="Transferência">Transferência</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Observações</label>
+                <textarea name="notes" class="w-full border rounded px-3 py-2" rows="3"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                    Confirmar
+                </button>
+                <button type="button" onclick="closePaymentModal()" class="bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400 transition">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openPaymentModal(paymentId) {
+    document.getElementById('paymentModal').classList.remove('hidden');
+    document.getElementById('paymentForm').action = `/financial/payments/${paymentId}/register`;
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentModal').classList.add('hidden');
+}
+</script>
+{% endblock %}

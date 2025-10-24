@@ -66,6 +66,14 @@
                    class="block p-3 bg-green-50 rounded hover:bg-green-100 transition">
                     <i class="fas fa-users text-green-600 mr-2"></i>Gerenciar Usuários
                 </a>
+                <a href="{{ url_for('financial.dashboard') }}" 
+                   class="block p-3 bg-emerald-50 rounded hover:bg-emerald-100 transition">
+                    <i class="fas fa-dollar-sign text-emerald-600 mr-2"></i>Financeiro
+                </a>
+                <a href="{{ url_for('documents.index') }}" 
+                   class="block p-3 bg-indigo-50 rounded hover:bg-indigo-100 transition">
+                    <i class="fas fa-folder-open text-indigo-600 mr-2"></i>Documentos
+                </a>
                 <a href="{{ url_for('admin.recitals') }}" 
                    class="block p-3 bg-purple-50 rounded hover:bg-purple-100 transition">
                     <i class="fas fa-music text-purple-600 mr-2"></i>Recitais e Eventos

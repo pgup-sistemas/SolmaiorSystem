@@ -1,0 +1,45 @@
+
+{% extends "base.html" %}
+
+{% block title %}Relatório de Inadimplência - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-red-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-exclamation-circle mr-2"></i>Relatório de Inadimplência
+        </h1>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aluno</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telefone</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Referência</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vencimento</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dias Atraso</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for payment in overdue_payments %}
+                <tr class="hover:bg-red-50">
+                    <td class="px-6 py-4">{{ payment.enrollment.student.user.full_name }}</td>
+                    <td class="px-6 py-4">{{ payment.enrollment.student.user.phone }}</td>
+                    <td class="px-6 py-4">{{ payment.reference_month.strftime('%m/%Y') }}</td>
+                    <td class="px-6 py-4">{{ payment.due_date.strftime('%d/%m/%Y') }}</td>
+                    <td class="px-6 py-4 text-red-600 font-bold">
+                        {{ (now().date() - payment.due_date).days }} dias
+                    </td>
+                    <td class="px-6 py-4">R$ {{ "%.2f"|format(payment.total_amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

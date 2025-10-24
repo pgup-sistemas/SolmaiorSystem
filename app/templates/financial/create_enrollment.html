@@ -1,0 +1,54 @@
+
+{% extends "base.html" %}
+
+{% block title %}Nova Matrícula - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-blue-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-user-plus mr-2"></i>Nova Matrícula
+        </h1>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow p-6">
+        <form method="POST">
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Aluno</label>
+                <select name="student_id" required class="w-full border rounded px-3 py-2">
+                    <option value="">Selecione um aluno</option>
+                    {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.user.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Tipo de Plano</label>
+                <input type="text" name="plan_type" required class="w-full border rounded px-3 py-2">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Valor Mensal (R$)</label>
+                <input type="number" step="0.01" name="monthly_value" required class="w-full border rounded px-3 py-2">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Data de Início</label>
+                <input type="date" name="start_date" required class="w-full border rounded px-3 py-2">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Data de Término (opcional)</label>
+                <input type="date" name="end_date" class="w-full border rounded px-3 py-2">
+            </div>
+            
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                <i class="fas fa-save mr-2"></i>Criar Matrícula
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

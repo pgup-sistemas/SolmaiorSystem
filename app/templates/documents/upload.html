@@ -1,0 +1,81 @@
+
+{% extends "base.html" %}
+
+{% block title %}Enviar Documento - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-blue-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-upload mr-2"></i>Enviar Documento
+        </h1>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow p-6">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Arquivo</label>
+                <input type="file" name="file" required class="w-full border rounded px-3 py-2">
+                <p class="text-sm text-gray-500 mt-1">Formatos aceitos: PDF, DOC, DOCX, TXT, JPG, PNG, MP3, WAV, MP4, AVI</p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Título</label>
+                <input type="text" name="title" required class="w-full border rounded px-3 py-2">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Descrição</label>
+                <textarea name="description" class="w-full border rounded px-3 py-2" rows="3"></textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Categoria</label>
+                <select name="category" required class="w-full border rounded px-3 py-2">
+                    <option value="document">Documento</option>
+                    <option value="image">Imagem</option>
+                    <option value="audio">Áudio</option>
+                    <option value="video">Vídeo</option>
+                    <option value="sheet_music">Partitura</option>
+                    <option value="other">Outro</option>
+                </select>
+            </div>
+            
+            {% if current_user.role in ['admin', 'secretary'] %}
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Relacionar com Aluno (opcional)</label>
+                <select name="related_student_id" class="w-full border rounded px-3 py-2">
+                    <option value="">Nenhum</option>
+                    {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.user.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Relacionar com Professor (opcional)</label>
+                <select name="related_teacher_id" class="w-full border rounded px-3 py-2">
+                    <option value="">Nenhum</option>
+                    {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}">{{ teacher.user.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" name="is_public" class="mr-2">
+                    <span class="text-gray-700">Documento público (visível para todos)</span>
+                </label>
+            </div>
+            {% endif %}
+            
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                <i class="fas fa-upload mr-2"></i>Enviar Documento
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

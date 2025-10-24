@@ -1,0 +1,90 @@
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard Financeiro - Solmaior{% endblock %}
+
+{% block content %}
+<div class="bg-blue-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-dollar-sign mr-2"></i>Dashboard Financeiro
+        </h1>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Matrículas Ativas</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ total_active_enrollments }}</p>
+                </div>
+                <i class="fas fa-user-check text-4xl text-blue-200"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Pagamentos Pendentes</p>
+                    <p class="text-3xl font-bold text-orange-600">{{ pending_payments }}</p>
+                </div>
+                <i class="fas fa-clock text-4xl text-orange-200"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Pagamentos Atrasados</p>
+                    <p class="text-3xl font-bold text-red-600">{{ overdue_payments }}</p>
+                </div>
+                <i class="fas fa-exclamation-triangle text-4xl text-red-200"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Receita do Mês</p>
+                    <p class="text-3xl font-bold text-green-600">R$ {{ "%.2f"|format(current_month_revenue) }}</p>
+                </div>
+                <i class="fas fa-money-bill-wave text-4xl text-green-200"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold mb-4">Acesso Rápido</h2>
+            <div class="space-y-3">
+                <a href="{{ url_for('financial.enrollments') }}" 
+                   class="block p-3 bg-blue-50 rounded hover:bg-blue-100 transition">
+                    <i class="fas fa-users text-blue-600 mr-2"></i>Gerenciar Matrículas
+                </a>
+                <a href="{{ url_for('financial.payments') }}" 
+                   class="block p-3 bg-green-50 rounded hover:bg-green-100 transition">
+                    <i class="fas fa-money-check text-green-600 mr-2"></i>Gerenciar Pagamentos
+                </a>
+                <a href="{{ url_for('financial.overdue_report') }}" 
+                   class="block p-3 bg-red-50 rounded hover:bg-red-100 transition">
+                    <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>Relatório de Inadimplência
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold mb-4">Últimos Pagamentos</h2>
+            <div class="space-y-3">
+                {% for payment in recent_payments %}
+                <div class="border-l-4 border-green-500 pl-3">
+                    <p class="font-semibold">{{ payment.enrollment.student.user.full_name }}</p>
+                    <p class="text-sm text-gray-600">R$ {{ "%.2f"|format(payment.total_amount) }} - {{ payment.payment_date.strftime('%d/%m/%Y') }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
