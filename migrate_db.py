@@ -1,10 +1,9 @@
 
 """
-Script de migração para adicionar novos campos no banco de dados
+Script de migração completo para atualizar estrutura do banco de dados
 """
 from app import create_app, db
 from sqlalchemy import text, inspect
-import sys
 
 app = create_app()
 
@@ -14,82 +13,167 @@ def column_exists(table_name, column_name):
     columns = [col['name'] for col in inspector.get_columns(table_name)]
     return column_name in columns
 
+def migrate_users_table():
+    """Adiciona novos campos à tabela users"""
+    with app.app_context():
+        print('\n🔄 Migrando tabela users...')
+        try:
+            columns_to_add = [
+                ('avatar_url', 'VARCHAR(500)'),
+                ('last_login', 'TIMESTAMP'),
+            ]
+            
+            added_count = 0
+            for col_name, col_type in columns_to_add:
+                if not column_exists('users', col_name):
+                    db.session.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+                    print(f'  ✓ Coluna {col_name} adicionada')
+                    added_count += 1
+                else:
+                    print(f'  ⊙ Coluna {col_name} já existe')
+            
+            db.session.commit()
+            print(f'✅ Migração da tabela users concluída! ({added_count} colunas adicionadas)')
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f'✗ Erro na migração de users: {str(e)}')
+            return False
+
 def migrate_students_table():
     """Adiciona novos campos à tabela students"""
     with app.app_context():
+        print('\n🔄 Migrando tabela students...')
         try:
-            print('\n🔄 Migrando tabela students...')
-            
-            # Lista de colunas a adicionar
-            columns_to_add = {
-                'guardian_name': 'VARCHAR(200)',
-                'guardian_phone': 'VARCHAR(20)',
-                'guardian_email': 'VARCHAR(120)',
-                'guardian_cpf': 'VARCHAR(14)',
-                'birth_date': 'DATE',
-                'cpf': 'VARCHAR(14)',
-                'rg': 'VARCHAR(20)',
-                'address': 'VARCHAR(300)',
-                'city': 'VARCHAR(100)',
-                'state': 'VARCHAR(2)',
-                'zip_code': 'VARCHAR(10)',
-                'course_modality': 'VARCHAR(50)',
-                'weekly_lessons': 'INTEGER DEFAULT 1',
-                'lesson_duration': 'INTEGER DEFAULT 60',
-                'preferred_schedule': 'VARCHAR(100)',
-                'medical_info': 'TEXT',
-                'special_needs': 'TEXT',
-                'previous_experience': 'TEXT',
-                'goals': 'TEXT',
-                'photo_url': 'VARCHAR(500)',
-                'is_active': 'BOOLEAN DEFAULT TRUE',
-                'notes': 'TEXT'
-            }
+            columns_to_add = [
+                ('guardian_name', 'VARCHAR(200)'),
+                ('guardian_phone', 'VARCHAR(20)'),
+                ('guardian_email', 'VARCHAR(120)'),
+                ('guardian_cpf', 'VARCHAR(14)'),
+                ('birth_date', 'DATE'),
+                ('cpf', 'VARCHAR(14)'),
+                ('rg', 'VARCHAR(20)'),
+                ('address', 'VARCHAR(300)'),
+                ('city', 'VARCHAR(100)'),
+                ('state', 'VARCHAR(2)'),
+                ('zip_code', 'VARCHAR(10)'),
+                ('course_modality', 'VARCHAR(50)'),
+                ('weekly_lessons', 'INTEGER DEFAULT 1'),
+                ('lesson_duration', 'INTEGER DEFAULT 60'),
+                ('preferred_schedule', 'VARCHAR(100)'),
+                ('medical_info', 'TEXT'),
+                ('special_needs', 'TEXT'),
+                ('previous_experience', 'TEXT'),
+                ('goals', 'TEXT'),
+                ('photo_url', 'VARCHAR(500)'),
+                ('is_active', 'BOOLEAN DEFAULT TRUE'),
+                ('notes', 'TEXT'),
+                ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+                ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+            ]
             
             added_count = 0
-            for column_name, column_type in columns_to_add.items():
-                if not column_exists('students', column_name):
-                    db.session.execute(text(f"""
-                        ALTER TABLE students 
-                        ADD COLUMN {column_name} {column_type};
-                    """))
-                    print(f'  ✓ Coluna {column_name} adicionada')
+            for col_name, col_type in columns_to_add:
+                if not column_exists('students', col_name):
+                    db.session.execute(text(f"ALTER TABLE students ADD COLUMN {col_name} {col_type}"))
+                    print(f'  ✓ Coluna {col_name} adicionada')
                     added_count += 1
                 else:
-                    print(f'  ⊙ Coluna {column_name} já existe')
+                    print(f'  ⊙ Coluna {col_name} já existe')
+            
+            # Criar índice para CPF se não existir
+            db.session.execute(text("CREATE INDEX IF NOT EXISTS idx_student_cpf ON students(cpf)"))
             
             db.session.commit()
             print(f'✅ Migração da tabela students concluída! ({added_count} colunas adicionadas)')
             return True
-            
         except Exception as e:
             db.session.rollback()
-            print(f'❌ Erro na migração da tabela students: {str(e)}')
+            print(f'✗ Erro na migração de students: {str(e)}')
             return False
 
-def migrate_users_table():
-    """Adiciona campo de avatar à tabela users"""
+def migrate_teachers_table():
+    """Adiciona novos campos à tabela teachers"""
     with app.app_context():
+        print('\n🔄 Migrando tabela teachers...')
         try:
-            print('\n🔄 Migrando tabela users...')
+            columns_to_add = [
+                ('hourly_rate', 'FLOAT'),
+                ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+                ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+            ]
             
-            if not column_exists('users', 'avatar_url'):
-                db.session.execute(text("""
-                    ALTER TABLE users 
-                    ADD COLUMN avatar_url VARCHAR(500);
-                """))
-                db.session.commit()
-                print('  ✓ Coluna avatar_url adicionada')
-                print('✅ Migração da tabela users concluída!')
-            else:
-                print('  ⊙ Coluna avatar_url já existe')
-                print('✅ Tabela users já está atualizada!')
+            added_count = 0
+            for col_name, col_type in columns_to_add:
+                if not column_exists('teachers', col_name):
+                    db.session.execute(text(f"ALTER TABLE teachers ADD COLUMN {col_name} {col_type}"))
+                    print(f'  ✓ Coluna {col_name} adicionada')
+                    added_count += 1
+                else:
+                    print(f'  ⊙ Coluna {col_name} já existe')
             
+            db.session.commit()
+            print(f'✅ Migração da tabela teachers concluída! ({added_count} colunas adicionadas)')
             return True
-            
         except Exception as e:
             db.session.rollback()
-            print(f'❌ Erro na migração da tabela users: {str(e)}')
+            print(f'✗ Erro na migração de teachers: {str(e)}')
+            return False
+
+def migrate_lesson_schedule_table():
+    """Adiciona novos campos à tabela lesson_schedule"""
+    with app.app_context():
+        print('\n🔄 Migrando tabela lesson_schedule...')
+        try:
+            columns_to_add = [
+                ('attendance_confirmed', 'BOOLEAN DEFAULT FALSE'),
+                ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+                ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+            ]
+            
+            added_count = 0
+            for col_name, col_type in columns_to_add:
+                if not column_exists('lesson_schedule', col_name):
+                    db.session.execute(text(f"ALTER TABLE lesson_schedule ADD COLUMN {col_name} {col_type}"))
+                    print(f'  ✓ Coluna {col_name} adicionada')
+                    added_count += 1
+                else:
+                    print(f'  ⊙ Coluna {col_name} já existe')
+            
+            db.session.commit()
+            print(f'✅ Migração da tabela lesson_schedule concluída! ({added_count} colunas adicionadas)')
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f'✗ Erro na migração de lesson_schedule: {str(e)}')
+            return False
+
+def migrate_enrollments_table():
+    """Adiciona novos campos à tabela enrollments"""
+    with app.app_context():
+        print('\n🔄 Migrando tabela enrollments...')
+        try:
+            columns_to_add = [
+                ('cancellation_reason', 'TEXT'),
+                ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+                ('updated_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+            ]
+            
+            added_count = 0
+            for col_name, col_type in columns_to_add:
+                if not column_exists('enrollments', col_name):
+                    db.session.execute(text(f"ALTER TABLE enrollments ADD COLUMN {col_name} {col_type}"))
+                    print(f'  ✓ Coluna {col_name} adicionada')
+                    added_count += 1
+                else:
+                    print(f'  ⊙ Coluna {col_name} já existe')
+            
+            db.session.commit()
+            print(f'✅ Migração da tabela enrollments concluída! ({added_count} colunas adicionadas)')
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f'✗ Erro na migração de enrollments: {str(e)}')
             return False
 
 def verify_migrations():
@@ -97,22 +181,28 @@ def verify_migrations():
     with app.app_context():
         print('\n🔍 Verificando migrações...')
         
-        students_columns = ['guardian_name', 'guardian_email', 'birth_date', 'cpf', 
-                          'course_modality', 'medical_info', 'photo_url', 'is_active']
+        checks = [
+            ('users', 'avatar_url'),
+            ('users', 'last_login'),
+            ('students', 'guardian_name'),
+            ('students', 'cpf'),
+            ('students', 'is_active'),
+            ('students', 'created_at'),
+            ('teachers', 'hourly_rate'),
+            ('teachers', 'created_at'),
+            ('lesson_schedule', 'attendance_confirmed'),
+            ('lesson_schedule', 'created_at'),
+            ('enrollments', 'cancellation_reason'),
+            ('enrollments', 'created_at'),
+        ]
         
         all_good = True
-        for col in students_columns:
-            exists = column_exists('students', col)
+        for table, column in checks:
+            exists = column_exists(table, column)
             status = '✓' if exists else '✗'
-            print(f'  {status} students.{col}')
+            print(f'  {status} {table}.{column}')
             if not exists:
                 all_good = False
-        
-        users_exists = column_exists('users', 'avatar_url')
-        status = '✓' if users_exists else '✗'
-        print(f'  {status} users.avatar_url')
-        if not users_exists:
-            all_good = False
         
         return all_good
 
@@ -123,21 +213,30 @@ if __name__ == '__main__':
     
     success = True
     
-    # Migrar tabelas
-    if not migrate_students_table():
-        success = False
-    
+    # Executar todas as migrações
     if not migrate_users_table():
         success = False
     
-    # Verificar migrações
+    if not migrate_students_table():
+        success = False
+    
+    if not migrate_teachers_table():
+        success = False
+    
+    if not migrate_lesson_schedule_table():
+        success = False
+    
+    if not migrate_enrollments_table():
+        success = False
+    
+    # Verificar resultado
     print('\n' + '=' * 60)
     if verify_migrations():
         print('✅ TODAS AS MIGRAÇÕES FORAM APLICADAS COM SUCESSO!')
     else:
         print('⚠️  ALGUMAS MIGRAÇÕES FALHARAM!')
         success = False
-    
     print('=' * 60)
     
-    sys.exit(0 if success else 1)
+    if not success:
+        exit(1)
