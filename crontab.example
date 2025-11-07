@@ -1,0 +1,12 @@
+# Exemplo de configuração de cron para tarefas automatizadas
+# Para instalar: crontab -e
+# Cole estas linhas ajustando o caminho do projeto
+
+# Tarefas horárias (processar notificações pendentes)
+0 * * * * cd /caminho/do/projeto && /usr/bin/python3 run_tasks.py hourly >> /var/log/solmaior/hourly.log 2>&1
+
+# Tarefas diárias às 8h da manhã (lembretes e marcação de faltas)
+0 8 * * * cd /caminho/do/projeto && /usr/bin/python3 run_tasks.py daily >> /var/log/solmaior/daily.log 2>&1
+
+# Lembretes de pagamento às 9h da manhã
+0 9 * * * cd /caminho/do/projeto && /usr/bin/python3 -c "from app import create_app; from app.tasks import send_payment_reminders; app=create_app(); app.app_context().push(); send_payment_reminders()" >> /var/log/solmaior/payments.log 2>&1

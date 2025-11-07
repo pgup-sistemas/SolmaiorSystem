@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Landing Page - Admin{% endblock %}
+
+{% block content %}
+<style>
+/* Estilos para garantir visibilidade dos inputs */
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    margin-bottom: 0.5rem;
+}
+
+.form-control:focus {
+    color: #212529;
+    background-color: #fff;
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-control::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+input[type="number"].form-control,
+input[type="text"].form-control {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: none;
+}
+
+.form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+    cursor: pointer;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+.form-check-label {
+    cursor: pointer;
+    user-select: none;
+}
+
+small.text-gray-600 {
+    display: block;
+    margin-top: 0.25rem;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+</style>
+
+<div class="container" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold">Editar Landing Page</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <!-- Seção Hero -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h2 class="text-xl font-bold">Seção Principal (Hero)</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.update_landing_section', section='hero') }}">
+                <div class="form-group">
+                    <label for="hero_title">Título Principal</label>
+                    <input type="text" class="form-control" id="hero_title" name="title" 
+                           value="{{ hero.title if hero else '' }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="hero_subtitle">Subtítulo</label>
+                    <textarea class="form-control" id="hero_subtitle" name="subtitle" 
+                              rows="3">{{ hero.subtitle if hero else '' }}</textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label for="hero_button_text">Texto do Botão</label>
+                        <input type="text" class="form-control" id="hero_button_text" name="button_text" 
+                               value="{{ hero.button_text if hero else '' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hero_button_link">Link do Botão</label>
+                        <input type="text" class="form-control" id="hero_button_link" name="button_link" 
+                               value="{{ hero.button_link if hero else '' }}">
+                    </div>
+                </div>
+                
+                <div class="form-check mb-4">
+                    <input type="checkbox" class="form-check-input" id="hero_active" name="is_active" 
+                           {{ 'checked' if hero and hero.is_active else '' }}>
+                    <label class="form-check-label" for="hero_active">Seção Ativa</label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar Hero
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="card mb-6">
+        <div class="card-header flex items-center justify-between">
+            <h2 class="text-xl font-bold">Features/Diferenciais</h2>
+            <button type="button" class="btn btn-primary btn-sm" onclick="toggleFeatureForm()">
+                <i class="fas fa-plus"></i> Adicionar Feature
+            </button>
+        </div>
+        <div class="card-body">
+            <!-- Formulário de adicionar feature (escondido inicialmente) -->
+            <div id="addFeatureForm" style="display: none;" class="mb-6 p-4 bg-gray-50 rounded">
+                <h3 class="font-bold mb-4">Nova Feature</h3>
+                <form method="POST" action="{{ url_for('admin.add_landing_feature') }}">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label>Ícone (Font Awesome)</label>
+                            <input type="text" class="form-control" name="icon" placeholder="fas fa-guitar" required>
+                            <small class="text-gray-600">Ex: fas fa-guitar, fas fa-music</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Ordem de Exibição</label>
+                            <input type="number" class="form-control" name="display_order" value="0" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Título</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <textarea class="form-control" name="description" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Adicionar
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="toggleFeatureForm()">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Lista de features -->
+            <div class="grid gap-4">
+                {% for feature in features %}
+                <div class="p-4 border rounded">
+                    <div class="flex items-start gap-4">
+                        <div class="text-3xl text-primary">
+                            <i class="{{ feature.icon }}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold">{{ feature.title }}</h4>
+                            <p class="text-gray-600 text-sm">{{ feature.description }}</p>
+                            <p class="text-xs text-gray-500 mt-2">
+                                Ordem: {{ feature.display_order }} | 
+                                Status: {{ 'Ativa' if feature.is_active else 'Inativa' }}
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" class="btn btn-sm btn-secondary" 
+                                    onclick="editFeature({{ feature.id }})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form method="POST" action="{{ url_for('admin.delete_landing_feature', id=feature.id) }}" 
+                                  class="inline" onsubmit="return confirm('Tem certeza?')">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-center py-8">Nenhuma feature cadastrada</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção CTA -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-xl font-bold">Seção de Call-to-Action (CTA)</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.update_landing_section', section='cta') }}">
+                <div class="form-group">
+                    <label for="cta_title">Título</label>
+                    <input type="text" class="form-control" id="cta_title" name="title" 
+                           value="{{ cta.title if cta else '' }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cta_subtitle">Subtítulo</label>
+                    <textarea class="form-control" id="cta_subtitle" name="subtitle" 
+                              rows="3">{{ cta.subtitle if cta else '' }}</textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label for="cta_button_text">Texto do Botão</label>
+                        <input type="text" class="form-control" id="cta_button_text" name="button_text" 
+                               value="{{ cta.button_text if cta else '' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cta_button_link">Link do Botão</label>
+                        <input type="text" class="form-control" id="cta_button_link" name="button_link" 
+                               value="{{ cta.button_link if cta else '' }}">
+                    </div>
+                </div>
+                
+                <div class="form-check mb-4">
+                    <input type="checkbox" class="form-check-input" id="cta_active" name="is_active" 
+                           {{ 'checked' if cta and cta.is_active else '' }}>
+                    <label class="form-check-label" for="cta_active">Seção Ativa</label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar CTA
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFeatureForm() {
+    const form = document.getElementById('addFeatureForm');
+    if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';
+    } else {
+        form.style.display = 'none';
+    }
+}
+
+function editFeature(id) {
+    alert('Funcionalidade de edição em desenvolvimento. Por enquanto, delete e recrie a feature.');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Aulas Experimentais - Sol Maior{% endblock %}
+
+{% block content %}
+<div class="bg-purple-600 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-clipboard-list mr-2"></i>Gerenciar Aulas Experimentais
+        </h1>
+        <p class="mt-2">Bem-vindo(a), {{ current_user.full_name }}</p>
+        <nav class="text-sm mt-2 opacity-90">
+            <a href="{{ url_for('public.index') }}" class="hover:underline">Início</a>
+            <span class="mx-2">/</span>
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('admin.dashboard') }}" class="hover:underline">Painel Admin</a>
+            <span class="mx-2">/</span>
+            {% elif current_user.role == 'secretary' %}
+            <a href="{{ url_for('secretary.dashboard') }}" class="hover:underline">Painel Secretaria</a>
+            <span class="mx-2">/</span>
+            {% endif %}
+            <span>Aulas Experimentais</span>
+        </nav>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <!-- Estatísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Pendentes</p>
+                    <p class="text-3xl font-bold text-yellow-600">{{ stats.pending }}</p>
+                </div>
+                <i class="fas fa-clock text-4xl text-yellow-200"></i>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Agendadas</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ stats.scheduled }}</p>
+                </div>
+                <i class="fas fa-calendar-check text-4xl text-blue-200"></i>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Concluídas</p>
+                    <p class="text-3xl font-bold text-green-600">{{ stats.completed }}</p>
+                </div>
+                <i class="fas fa-check-circle text-4xl text-green-200"></i>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600">Canceladas</p>
+                    <p class="text-3xl font-bold text-red-600">{{ stats.cancelled }}</p>
+                </div>
+                <i class="fas fa-times-circle text-4xl text-red-200"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <form method="GET" class="flex flex-wrap gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg" onchange="this.form.submit()">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Todos</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendentes</option>
+                    <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>Agendadas</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Concluídas</option>
+                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Canceladas</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Instrumento</label>
+                <select name="instrument" class="px-4 py-2 border border-gray-300 rounded-lg" onchange="this.form.submit()">
+                    <option value="all" {% if instrument_filter == 'all' %}selected{% endif %}>Todos</option>
+                    {% for inst in instruments %}
+                    <option value="{{ inst }}" {% if instrument_filter == inst %}selected{% endif %}>{{ inst }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Solicitações -->
+    <div class="space-y-4">
+        {% if trial_lessons %}
+            {% for trial in trial_lessons %}
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 
+                {% if trial.status == 'pending' %}border-yellow-500
+                {% elif trial.status == 'scheduled' %}border-blue-500
+                {% elif trial.status == 'completed' %}border-green-500
+                {% else %}border-gray-500{% endif %}">
+                
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-3">
+                            <h3 class="text-xl font-semibold text-gray-900">
+                                {{ trial.full_name }}
+                            </h3>
+                            <span class="px-3 py-1 text-sm rounded-full
+                                {% if trial.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% elif trial.status == 'scheduled' %}bg-blue-100 text-blue-800
+                                {% elif trial.status == 'completed' %}bg-green-100 text-green-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {% if trial.status == 'pending' %}⏳ Pendente
+                                {% elif trial.status == 'scheduled' %}📅 Agendada
+                                {% elif trial.status == 'completed' %}✅ Concluída
+                                {% else %}❌ Cancelada{% endif %}
+                            </span>
+                            {% if trial.confirmation_sent %}
+                            <span class="px-3 py-1 text-sm rounded-full bg-green-100 text-green-800">
+                                <i class="fas fa-envelope-check"></i> Email Enviado
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3">
+                            <div>
+                                <span class="font-medium">🎵 Instrumento:</span>
+                                <span class="text-gray-900">{{ trial.instrument }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium">📧 Email:</span>
+                                <span class="text-gray-900">{{ trial.email }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium">📞 Telefone:</span>
+                                <span class="text-gray-900">{{ trial.phone }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium">📅 Solicitado em:</span>
+                                <span class="text-gray-900">{{ trial.created_at.strftime('%d/%m/%Y') }}</span>
+                            </div>
+                        </div>
+
+                        {% if trial.scheduled_date %}
+                        <div class="bg-blue-50 p-3 rounded-lg mb-3">
+                            <strong class="text-blue-900">📅 Agendamento:</strong>
+                            <span class="text-blue-800">
+                                {{ trial.scheduled_date.strftime('%d/%m/%Y') }} às {{ trial.scheduled_time.strftime('%H:%M') }}
+                                {% if trial.assigned_teacher %}
+                                com {{ trial.assigned_teacher.user.full_name }}
+                                {% endif %}
+                                {% if trial.room %}
+                                - Sala {{ trial.room.name }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% endif %}
+
+                        {% if trial.preferred_date %}
+                        <div class="text-sm text-gray-600">
+                            <strong>Preferência do cliente:</strong> 
+                            {{ trial.preferred_date.strftime('%d/%m/%Y') }}
+                            {% if trial.preferred_time %}às {{ trial.preferred_time }}{% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if trial.message %}
+                        <div class="mt-3 p-3 bg-gray-50 rounded-lg text-sm text-gray-700">
+                            <strong>Mensagem:</strong> {{ trial.message }}
+                        </div>
+                        {% endif %}
+
+                        {% if trial.notes %}
+                        <div class="mt-3 p-3 bg-yellow-50 rounded-lg text-sm text-gray-700">
+                            <strong>Observações internas:</strong> {{ trial.notes }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="ml-4 flex flex-col gap-2">
+                        <a href="{{ url_for('trial_lessons.view', id=trial.id) }}" 
+                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-center text-sm">
+                            <i class="fas fa-eye"></i> Ver Detalhes
+                        </a>
+                        
+                        {% if trial.status == 'pending' %}
+                        <a href="{{ url_for('trial_lessons.view', id=trial.id) }}" 
+                           class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-center text-sm">
+                            <i class="fas fa-calendar-plus"></i> Agendar
+                        </a>
+                        {% elif trial.status == 'scheduled' %}
+                        <form method="POST" action="{{ url_for('trial_lessons.complete', id=trial.id) }}">
+                            <button type="submit" 
+                                    class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+                                <i class="fas fa-check"></i> Marcar Concluída
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="bg-gray-50 rounded-lg p-8 text-center">
+                <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-600">Nenhuma solicitação de aula experimental encontrada.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

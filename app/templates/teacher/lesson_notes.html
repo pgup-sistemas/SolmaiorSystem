@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Notas da Aula - Professor{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="mb-8">
+        <a href="{{ url_for('teacher.lessons') }}" class="text-blue-600 hover:text-blue-800 mb-4 inline-block">
+            ← Voltar para Aulas
+        </a>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Notas da Aula</h1>
+        <p class="text-gray-600">Registre detalhes e progresso do aluno</p>
+    </div>
+
+    <!-- Informações da Aula -->
+    <div class="bg-blue-50 rounded-lg p-6 mb-6">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <span class="font-medium text-gray-700">👨‍🎓 Aluno:</span>
+                <span class="text-gray-900">{{ lesson.student.user.full_name }}</span>
+            </div>
+            <div>
+                <span class="font-medium text-gray-700">📅 Data:</span>
+                <span class="text-gray-900">{{ lesson.lesson_date.strftime('%d/%m/%Y') }}</span>
+            </div>
+            <div>
+                <span class="font-medium text-gray-700">⏰ Horário:</span>
+                <span class="text-gray-900">{{ lesson.start_time.strftime('%H:%M') }}</span>
+            </div>
+            <div>
+                <span class="font-medium text-gray-700">🎵 Instrumento:</span>
+                <span class="text-gray-900">{{ lesson.student.instrument }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulário de Notas -->
+    <form method="POST" class="bg-white rounded-lg shadow-md p-6">
+        <div class="space-y-6">
+            <!-- Conteúdo Ministrado -->
+            <div>
+                <label for="lesson_content" class="block text-sm font-medium text-gray-700 mb-2">
+                    📚 Conteúdo Ministrado *
+                </label>
+                <textarea id="lesson_content" name="lesson_content" rows="4" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                          placeholder="Ex: Escalas maiores em Dó, Ré e Mi. Estudos de técnica de mão direita..." 
+                          required>{{ lesson.lesson_content or '' }}</textarea>
+                <p class="text-sm text-gray-500 mt-1">Descreva o que foi ensinado durante a aula</p>
+            </div>
+
+            <!-- Lição de Casa -->
+            <div>
+                <label for="homework_assigned" class="block text-sm font-medium text-gray-700 mb-2">
+                    📝 Lição de Casa
+                </label>
+                <textarea id="homework_assigned" name="homework_assigned" rows="3" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                          placeholder="Ex: Praticar escala de Dó maior, 15 min/dia. Ler partitura da página 12...">{{ lesson.homework_assigned or '' }}</textarea>
+                <p class="text-sm text-gray-500 mt-1">Tarefas para o aluno praticar até a próxima aula</p>
+            </div>
+
+            <!-- Progresso do Aluno -->
+            <div>
+                <label for="student_progress" class="block text-sm font-medium text-gray-700 mb-2">
+                    📊 Avaliação do Progresso *
+                </label>
+                <select id="student_progress" name="student_progress" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                        required>
+                    <option value="">Selecione...</option>
+                    <option value="excellent" {% if lesson.student_progress == 'excellent' %}selected{% endif %}>
+                        ⭐⭐⭐ Excelente - Superou expectativas
+                    </option>
+                    <option value="good" {% if lesson.student_progress == 'good' %}selected{% endif %}>
+                        ⭐⭐ Bom - Progredindo bem
+                    </option>
+                    <option value="satisfactory" {% if lesson.student_progress == 'satisfactory' %}selected{% endif %}>
+                        ⭐ Satisfatório - Progresso adequado
+                    </option>
+                    <option value="needs_improvement" {% if lesson.student_progress == 'needs_improvement' %}selected{% endif %}>
+                        ⚠️ Precisa Melhorar - Requer mais atenção
+                    </option>
+                </select>
+            </div>
+
+            <!-- Observações Gerais -->
+            <div>
+                <label for="lesson_notes" class="block text-sm font-medium text-gray-700 mb-2">
+                    💬 Observações Gerais
+                </label>
+                <textarea id="lesson_notes" name="lesson_notes" rows="4" 
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                          placeholder="Comportamento, dificuldades específicas, pontos de destaque, sugestões...">{{ lesson.lesson_notes or '' }}</textarea>
+                <p class="text-sm text-gray-500 mt-1">Observações adicionais sobre a aula e o aluno</p>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex gap-4">
+                <button type="submit" 
+                        class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                    💾 Salvar Notas
+                </button>
+                <a href="{{ url_for('teacher.lessons') }}" 
+                   class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium text-center">
+                    Cancelar
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Histórico (se houver notas anteriores) -->
+    {% if lesson.lesson_notes or lesson.lesson_content %}
+    <div class="mt-8 bg-gray-50 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">📋 Registro Atual</h3>
+        <div class="space-y-3 text-sm">
+            {% if lesson.lesson_content %}
+            <div>
+                <span class="font-medium text-gray-700">Conteúdo:</span>
+                <p class="text-gray-600 mt-1">{{ lesson.lesson_content }}</p>
+            </div>
+            {% endif %}
+            {% if lesson.homework_assigned %}
+            <div>
+                <span class="font-medium text-gray-700">Lição de Casa:</span>
+                <p class="text-gray-600 mt-1">{{ lesson.homework_assigned }}</p>
+            </div>
+            {% endif %}
+            {% if lesson.student_progress %}
+            <div>
+                <span class="font-medium text-gray-700">Progresso:</span>
+                <span class="text-gray-600">
+                    {% if lesson.student_progress == 'excellent' %}⭐⭐⭐ Excelente
+                    {% elif lesson.student_progress == 'good' %}⭐⭐ Bom
+                    {% elif lesson.student_progress == 'satisfactory' %}⭐ Satisfatório
+                    {% elif lesson.student_progress == 'needs_improvement' %}⚠️ Precisa Melhorar
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

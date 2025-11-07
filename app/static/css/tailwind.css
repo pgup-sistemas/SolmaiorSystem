@@ -1,0 +1,30 @@
+@import url('https://cdn.tailwindcss.com');
+
+:root {
+    --primary: #008bcd;
+    --primary-dark: #006fa3;
+    --primary-light: #1a9fe0;
+    --secondary: #6c757d;
+    --success: #28a745;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --info: #17a2b8;
+}
+
+@layer components {
+    .btn-primary {
+        @apply px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition;
+    }
+    
+    .btn-secondary {
+        @apply px-4 py-2 bg-gray-200 text-gray-900 rounded-lg font-semibold hover:bg-gray-300 transition;
+    }
+    
+    .card {
+        @apply bg-white rounded-lg shadow-md p-6;
+    }
+    
+    .form-input {
+        @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent;
+    }
+}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Presença Já Confirmada{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-12">
+    <div class="container mx-auto px-4">
+        <div class="max-w-2xl mx-auto">
+            <div class="card shadow-2xl">
+                <div class="card-body p-8 text-center">
+                    <div class="text-8xl mb-6">✅</div>
+                    <h1 class="text-3xl font-bold text-green-600 mb-4">Presença Já Confirmada!</h1>
+                    <p class="text-xl text-gray-700 mb-6">
+                        Você já confirmou sua presença anteriormente.
+                    </p>
+
+                    <div class="bg-green-50 rounded-lg p-6 mb-6">
+                        <h2 class="text-lg font-bold text-green-800 mb-4">📅 Detalhes da Aula:</h2>
+                        <div class="text-left space-y-2">
+                            <p><strong>Data:</strong> {{ trial.scheduled_date.strftime('%d/%m/%Y') }}</p>
+                            <p><strong>Horário:</strong> {{ trial.scheduled_time.strftime('%H:%M') }}</p>
+                            <p><strong>Instrumento:</strong> {{ trial.instrument }}</p>
+                            <p><strong>Confirmado em:</strong> {{ trial.user_confirmed_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 p-4 rounded mb-6">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Nos vemos na data marcada! 🎵
+                        </p>
+                    </div>
+
+                    <a href="{{ url_for('public.index') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home mr-2"></i>
+                        Voltar para o Site
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,70 +1,328 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sol Maior</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block title %}Login - Solmaior{% endblock %}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-{% block content %}
-<div class="bg-blue-600 text-white py-8">
-    <div class="container mx-auto px-4">
-        <h1 class="text-3xl font-bold text-center">Login</h1>
-        <nav class="text-sm mt-2 text-center opacity-90">
-            <a href="{{ url_for('public.index') }}" class="hover:underline">Início</a>
-            <span class="mx-2">/</span>
-            <span>Login</span>
-        </nav>
-    </div>
-</div>
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
 
-<div class="container mx-auto px-4 py-16">
-    <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
-        <h2 class="text-2xl font-bold text-center mb-8">
-            <i class="fas fa-sign-in-alt text-blue-600"></i> Acessar Sistema
-        </h2>
-        
-        <form method="POST" action="{{ url_for('auth.login') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="mb-6">
-                <label for="email" class="block text-gray-700 font-semibold mb-2">
-                    <i class="fas fa-envelope mr-1"></i> Email
-                </label>
-                <input type="email" id="email" name="email" required
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #008bcd 0%, #006fa3 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .login-body {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #008bcd;
+            box-shadow: 0 0 0 3px rgba(0, 139, 205, 0.1);
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .remember-me input {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .remember-me label {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4b5563;
+            cursor: pointer;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #008bcd 0%, #006fa3 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 139, 205, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .forgot-password a {
+            font-size: 13px;
+            color: #008bcd;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password a:hover {
+            color: #006fa3;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 10px;
+            font-size: 13px;
+            color: #9ca3af;
+            position: relative;
+        }
+
+        .signup-section {
+            text-align: center;
+        }
+
+        .signup-section p {
+            font-size: 14px;
+            color: #4b5563;
+            margin-bottom: 8px;
+        }
+
+        .signup-section a {
+            color: #008bcd;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .signup-section a:hover {
+            color: #006fa3;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            border-left: 4px solid #dc3545;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-header {
+                padding: 30px 20px;
+            }
+
+            .login-header h1 {
+                font-size: 24px;
+            }
+
+            .login-body {
+                padding: 30px 20px;
+            }
+
+            .logo {
+                font-size: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="login-header">
+                <div class="logo">
+                    <i class="fas fa-music"></i>
+                </div>
+                <h1>Sol Maior</h1>
+                <p>Sistema de Gestão para Escola de Música</p>
             </div>
-            
-            <div class="mb-6">
-                <label for="password" class="block text-gray-700 font-semibold mb-2">
-                    <i class="fas fa-lock mr-1"></i> Senha
-                </label>
-                <input type="password" id="password" name="password" required
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+
+            <!-- Body -->
+            <div class="login-body">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle mr-2"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Login Form -->
+                <form method="POST" action="{{ url_for('auth.login') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope mr-2" style="color: #008bcd;"></i>Email
+                        </label>
+                        <input type="email" id="email" name="email" placeholder="seu@email.com" required
+                               autofocus>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label for="password">
+                            <i class="fas fa-lock mr-2" style="color: #008bcd;"></i>Senha
+                        </label>
+                        <input type="password" id="password" name="password" placeholder="••••••••" required>
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember" name="remember">
+                        <label for="remember">Lembrar-me neste dispositivo</label>
+                    </div>
+
+                    <!-- Login Button -->
+                    <button type="submit" class="btn-login">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Entrar no Sistema
+                    </button>
+                </form>
+
+                <!-- Forgot Password -->
+                <div class="forgot-password">
+                    <a href="{{ url_for('auth.forgot_password') }}">
+                        <i class="fas fa-question-circle mr-1"></i>Esqueceu sua senha?
+                    </a>
+                </div>
+
+                <!-- Divider -->
+                <div class="divider">
+                    <span>Novo por aqui?</span>
+                </div>
+
+                <!-- Signup Section -->
+                <div class="signup-section">
+                    <p>Não tem uma conta?</p>
+                    <a href="{{ url_for('auth.register') }}">
+                        <i class="fas fa-user-plus mr-1"></i>Cadastre-se aqui
+                    </a>
+                </div>
             </div>
-            
-            <div class="mb-6">
-                <label class="flex items-center">
-                    <input type="checkbox" name="remember" class="mr-2">
-                    <span class="text-gray-700">Lembrar-me</span>
-                </label>
-            </div>
-            
-            <button type="submit" 
-                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-                <i class="fas fa-sign-in-alt mr-2"></i>Entrar
-            </button>
-        </form>
-        
-        <div class="mt-4 text-center">
-            <a href="{{ url_for('auth.forgot_password') }}" class="text-sm text-blue-600 hover:text-blue-800">
-                Esqueceu sua senha?
-            </a>
         </div>
-        
-        <div class="mt-6 text-center">
-            <p class="text-gray-600">
-                Não tem uma conta?
-                <a href="{{ url_for('auth.register') }}" class="text-blue-600 hover:text-blue-800 font-semibold">
-                    Cadastre-se aqui
-                </a>
-            </p>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px;">
+            <p>&copy; 2025 Sol Maior. Todos os direitos reservados.</p>
         </div>
     </div>
-</div>
-{% endblock %}
+
+    <script src="{{ url_for('static', filename='js/components.js') }}"></script>
+</body>
+</html>

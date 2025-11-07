@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}{{ recital.title }} - Sol Maior{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-r from-pink-600 to-purple-700 text-white py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold">
+            <i class="fas fa-music mr-2"></i>{{ recital.title }}
+        </h1>
+        <nav class="text-sm mt-2 opacity-90">
+            <a href="{{ url_for('public.index') }}" class="hover:underline">Início</a>
+            <span class="mx-2">/</span>
+            <a href="{{ url_for('student.dashboard') }}" class="hover:underline">Painel Aluno</a>
+            <span class="mx-2">/</span>
+            <a href="{{ url_for('student.recitals') }}" class="hover:underline">Recitais</a>
+            <span class="mx-2">/</span>
+            <span>{{ recital.title }}</span>
+        </nav>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Informações Principais -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">Informações do Evento</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <div class="text-sm text-gray-600 mb-1">
+                            <i class="fas fa-calendar text-pink-600 mr-2"></i>Data
+                        </div>
+                        <div class="font-semibold text-lg">{{ recital.event_date.strftime('%d de %B de %Y') }}</div>
+                    </div>
+                    
+                    <div>
+                        <div class="text-sm text-gray-600 mb-1">
+                            <i class="fas fa-clock text-pink-600 mr-2"></i>Horário
+                        </div>
+                        <div class="font-semibold text-lg">{{ recital.event_date.strftime('%H:%M') }}</div>
+                    </div>
+                    
+                    <div>
+                        <div class="text-sm text-gray-600 mb-1">
+                            <i class="fas fa-map-marker-alt text-pink-600 mr-2"></i>Local
+                        </div>
+                        <div class="font-semibold">{{ recital.location }}</div>
+                    </div>
+                    
+                    <div>
+                        <div class="text-sm text-gray-600 mb-1">
+                            <i class="fas fa-users text-pink-600 mr-2"></i>Capacidade
+                        </div>
+                        <div class="font-semibold">{{ recital.capacity }} pessoas</div>
+                    </div>
+                </div>
+                
+                {% if recital.description %}
+                <div class="mb-4">
+                    <div class="text-sm text-gray-600 mb-2">
+                        <i class="fas fa-info-circle text-pink-600 mr-2"></i>Descrição
+                    </div>
+                    <p class="text-gray-700">{{ recital.description }}</p>
+                </div>
+                {% endif %}
+                
+                {% if recital.dress_code %}
+                <div class="bg-pink-50 border border-pink-200 rounded p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-tshirt text-pink-600 text-2xl mr-3"></i>
+                        <div>
+                            <div class="font-semibold text-pink-800">Código de Vestimenta</div>
+                            <div class="text-sm text-pink-700">{{ recital.dress_code }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Programa do Recital -->
+            {% if performances %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-bold mb-4">Suas Apresentações</h2>
+                
+                <div class="space-y-4">
+                    {% for performance in performances %}
+                    <div class="bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200 rounded-lg p-4">
+                        <div class="flex items-start">
+                            <div class="bg-pink-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold mr-4">
+                                {{ performance.order }}
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg text-pink-800">{{ performance.title or 'Apresentação' }}</h3>
+                                <div class="text-sm text-gray-600 mt-1">
+                                    {% if performance.composer %}
+                                    <div><i class="fas fa-user-edit mr-1"></i>Compositor: {{ performance.composer }}</div>
+                                    {% endif %}
+                                    {% if performance.instrument %}
+                                    <div><i class="fas fa-guitar mr-1"></i>Instrumento: {{ performance.instrument }}</div>
+                                    {% endif %}
+                                    {% if performance.duration %}
+                                    <div><i class="fas fa-clock mr-1"></i>Duração: {{ performance.duration }} minutos</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar - Confirmação -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow p-6 sticky top-4">
+                <h3 class="text-xl font-bold mb-4">Sua Participação</h3>
+                
+                <div class="mb-6">
+                    <div class="text-sm text-gray-600 mb-2">Status de Confirmação:</div>
+                    {% if participant.confirmed %}
+                    <div class="bg-green-50 border border-green-200 rounded p-4 text-center">
+                        <i class="fas fa-check-circle text-green-600 text-4xl mb-2"></i>
+                        <div class="font-bold text-green-800">Presença Confirmada!</div>
+                    </div>
+                    {% else %}
+                    <div class="bg-yellow-50 border border-yellow-200 rounded p-4 text-center">
+                        <i class="fas fa-clock text-yellow-600 text-4xl mb-2"></i>
+                        <div class="font-bold text-yellow-800">Aguardando Confirmação</div>
+                        <div class="text-xs text-yellow-600 mt-1">Por favor, confirme sua presença</div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if not participant.confirmed and recital.event_date.date() >= datetime.now().date() %}
+                <div class="space-y-3">
+                    <form method="POST" action="{{ url_for('student.confirm_recital', recital_id=recital.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
+                            <i class="fas fa-check mr-2"></i>Confirmar Presença
+                        </button>
+                    </form>
+                    
+                    <form method="POST" action="{{ url_for('student.decline_recital', recital_id=recital.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="w-full py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-semibold">
+                            <i class="fas fa-times mr-2"></i>Não Poderei Comparecer
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+                
+                <div class="mt-6 pt-6 border-t">
+                    <a href="{{ url_for('student.recitals') }}" class="block text-center text-pink-600 hover:text-pink-800 font-semibold">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar para Lista de Eventos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

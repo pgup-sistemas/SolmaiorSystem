@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Fila de Espera - Secretaria{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Fila de Espera</h1>
+            <p class="text-gray-600">Gerencie alunos aguardando vagas</p>
+        </div>
+        <button onclick="document.getElementById('addModal').classList.remove('hidden')" 
+                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+            ➕ Adicionar à Fila
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+        <form method="GET" class="flex gap-4 items-end">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg" onchange="this.form.submit()">
+                    <option value="waiting" {% if status_filter == 'waiting' %}selected{% endif %}>Aguardando</option>
+                    <option value="matched" {% if status_filter == 'matched' %}selected{% endif %}>Atendidos</option>
+                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelados</option>
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Todos</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista da Fila -->
+    <div class="space-y-4">
+        {% if waitlist_entries %}
+            {% for entry in waitlist_entries %}
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 
+                {% if entry.status == 'waiting' %}border-yellow-500
+                {% elif entry.status == 'matched' %}border-green-500
+                {% else %}border-gray-500{% endif %}">
+                
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center font-bold text-gray-700">
+                                #{{ entry.priority }}
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-900">
+                                    {{ entry.student.user.full_name }}
+                                </h3>
+                                <span class="text-sm text-gray-600">
+                                    Desde {{ entry.created_at.strftime('%d/%m/%Y') }}
+                                </span>
+                            </div>
+                            <span class="px-3 py-1 text-sm rounded-full
+                                {% if entry.status == 'waiting' %}bg-yellow-100 text-yellow-800
+                                {% elif entry.status == 'matched' %}bg-green-100 text-green-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {% if entry.status == 'waiting' %}⏳ Aguardando
+                                {% elif entry.status == 'matched' %}✓ Atendido
+                                {% elif entry.status == 'cancelled' %}✗ Cancelado
+                                {% elif entry.status == 'expired' %}⏰ Expirado
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                            <div>
+                                <span class="font-medium">🎵 Instrumento:</span>
+                                <span class="text-gray-900">{{ entry.instrument }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium">👨‍🏫 Professor:</span>
+                                <span class="text-gray-900">{{ entry.teacher.user.full_name }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium">📅 Dia Preferido:</span>
+                                <span class="text-gray-900">{{ entry.preferred_day or 'Flexível' }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium">⏰ Horário:</span>
+                                <span class="text-gray-900">{{ entry.preferred_time or 'Flexível' }}</span>
+                            </div>
+                        </div>
+
+                        {% if entry.notes %}
+                        <div class="mt-3 p-3 bg-gray-50 rounded-lg text-sm text-gray-700">
+                            <strong>Observações:</strong> {{ entry.notes }}
+                        </div>
+                        {% endif %}
+
+                        {% if entry.expires_at and entry.status == 'waiting' %}
+                        <div class="mt-3 text-sm text-orange-600">
+                            ⚠️ Expira em: {{ entry.expires_at.strftime('%d/%m/%Y') }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if entry.status == 'waiting' %}
+                    <div class="ml-4 flex flex-col gap-2">
+                        <form method="POST" action="{{ url_for('secretary.match_waitlist', entry_id=entry.id) }}">
+                            <button type="submit" 
+                                    class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+                                ✓ Vaga Disponível
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('secretary.cancel_waitlist', entry_id=entry.id) }}"
+                              onsubmit="return confirm('Tem certeza que deseja cancelar esta entrada?')">
+                            <button type="submit" 
+                                    class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+                                ✗ Cancelar
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="bg-gray-50 rounded-lg p-8 text-center">
+                <p class="text-gray-600">Nenhuma entrada na fila de espera.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para Adicionar -->
+<div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Adicionar à Fila de Espera</h2>
+            <button onclick="document.getElementById('addModal').classList.add('hidden')" 
+                    class="text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <form method="POST" action="{{ url_for('secretary.create_waitlist_entry') }}" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Aluno *</label>
+                    <select name="student_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        <option value="">Selecione...</option>
+                        {% for student in students %}
+                        <option value="{{ student.id }}">{{ student.user.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Professor *</label>
+                    <select name="teacher_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        <option value="">Selecione...</option>
+                        {% for teacher in teachers %}
+                        <option value="{{ teacher.id }}">{{ teacher.user.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Instrumento *</label>
+                    <input type="text" name="instrument" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Duração (min)</label>
+                    <select name="duration" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="30">30 minutos</option>
+                        <option value="60" selected>60 minutos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Dia Preferido</label>
+                    <select name="preferred_day" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="">Flexível</option>
+                        <option value="Segunda">Segunda</option>
+                        <option value="Terça">Terça</option>
+                        <option value="Quarta">Quarta</option>
+                        <option value="Quinta">Quinta</option>
+                        <option value="Sexta">Sexta</option>
+                        <option value="Sábado">Sábado</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Horário Preferido</label>
+                    <input type="time" name="preferred_time" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                <textarea name="notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea>
+            </div>
+
+            <div class="flex gap-4 pt-4">
+                <button type="submit" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Adicionar à Fila
+                </button>
+                <button type="button" onclick="document.getElementById('addModal').classList.add('hidden')" 
+                        class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

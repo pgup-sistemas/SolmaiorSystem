@@ -1,18 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Painel Admin - Solmaior{% endblock %}
-
-{% block breadcrumb %}
-<div class="bg-gray-100 border-b">
-    <div class="container mx-auto px-4 py-2">
-        <nav class="text-sm">
-            <a href="{{ url_for('public.index') }}" class="text-blue-600 hover:underline">Início</a>
-            <span class="mx-2 text-gray-500">/</span>
-            <span class="text-gray-700">Painel Administrativo</span>
-        </nav>
-    </div>
-</div>
-{% endblock %}
+{% block title %}Painel Admin - Sol Maior{% endblock %}
 
 {% block content %}
 <div class="bg-blue-600 text-white py-8">
@@ -20,6 +8,12 @@
         <h1 class="text-3xl font-bold">
             <i class="fas fa-tachometer-alt mr-2"></i>Painel Administrativo
         </h1>
+        <p class="mt-2">Bem-vindo(a), {{ current_user.full_name }}</p>
+        <nav class="text-sm mt-2 opacity-90">
+            <a href="{{ url_for('public.index') }}" class="hover:underline">Início</a>
+            <span class="mx-2">/</span>
+            <span>Painel Administrativo</span>
+        </nav>
     </div>
 </div>
 
@@ -90,7 +84,7 @@
                    class="block p-3 bg-yellow-50 rounded hover:bg-yellow-100 transition">
                     <i class="fas fa-newspaper text-yellow-600 mr-2"></i>Gerenciar Notícias
                 </a>
-                <a href="{{ url_for('admin.trial_lessons') }}" 
+                <a href="{{ url_for('trial_lessons.index') }}" 
                    class="block p-3 bg-red-50 rounded hover:bg-red-100 transition">
                     <i class="fas fa-clipboard-list text-red-600 mr-2"></i>Aulas Experimentais
                 </a>
@@ -101,6 +95,14 @@
                 <a href="{{ url_for('documents.index') }}" 
                    class="block p-3 bg-pink-50 rounded hover:bg-pink-100 transition">
                     <i class="fas fa-file-alt text-pink-600 mr-2"></i>Documentos
+                </a>
+                <a href="{{ url_for('admin.landing_page_settings') }}" 
+                   class="block p-3 bg-teal-50 rounded hover:bg-teal-100 transition">
+                    <i class="fas fa-pager text-teal-600 mr-2"></i>Editar Landing Page
+                </a>
+                <a href="{{ url_for('admin.view_conflicts') }}" 
+                   class="block p-3 bg-red-50 rounded hover:bg-red-100 transition">
+                    <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>Conflitos de Agenda
                 </a>
             </div>
         </div>
@@ -127,5 +129,196 @@
             </div>
         </div>
     </div>
+
+    <!-- Analytics e Gráficos -->
+    {% if analytics %}
+    <div class="mt-8">
+        <h2 class="text-2xl font-bold mb-6">Analytics e Indicadores</h2>
+        
+        <!-- Cards de Analytics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <i class="fas fa-users text-4xl opacity-80"></i>
+                    <span class="badge bg-white text-blue-600 font-bold">
+                        {{ '%+.1f'|format(analytics.students.growth) }}%
+                    </span>
+                </div>
+                <p class="text-sm opacity-90">Novos Alunos (Mês)</p>
+                <p class="text-3xl font-bold">{{ analytics.students.new_this_month }}</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <i class="fas fa-book text-4xl opacity-80"></i>
+                    <span class="badge bg-white text-green-600 font-bold">
+                        {{ '%+.1f'|format(analytics.lessons.growth) }}%
+                    </span>
+                </div>
+                <p class="text-sm opacity-90">Aulas (Mês)</p>
+                <p class="text-3xl font-bold">{{ analytics.lessons.this_month }}</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <i class="fas fa-dollar-sign text-4xl opacity-80"></i>
+                    <span class="badge bg-white text-purple-600 font-bold">
+                        {{ '%+.1f'|format(analytics.revenue.growth) }}%
+                    </span>
+                </div>
+                <p class="text-sm opacity-90">Receita (Mês)</p>
+                <p class="text-3xl font-bold">R$ {{ '%.2f'|format(analytics.revenue.this_month) }}</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <i class="fas fa-check-circle text-4xl opacity-80"></i>
+                </div>
+                <p class="text-sm opacity-90">Taxa de Frequência</p>
+                <p class="text-3xl font-bold">{{ analytics.attendance.rate }}%</p>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-bold mb-4">Receita (Últimos 6 Meses)</h3>
+                <canvas id="revenueChart" style="max-height: 300px;"></canvas>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-bold mb-4">Alunos por Instrumento</h3>
+                <canvas id="studentsChart" style="max-height: 300px;"></canvas>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-bold mb-4">Taxa de Frequência Mensal</h3>
+                <canvas id="attendanceChart" style="max-height: 300px;"></canvas>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-bold mb-4">Distribuição de Aulas (Esta Semana)</h3>
+                <canvas id="lessonDistChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+
+        <!-- Conflitos e Ocupação -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Conflitos -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold">Conflitos de Agenda</h3>
+                    <span class="badge {{ 'badge-success' if not conflicts else 'badge-danger' }}">
+                        {{ conflicts|length }} conflitos
+                    </span>
+                </div>
+                {% if conflicts %}
+                <div class="space-y-2 mb-4">
+                    {% for conflict in conflicts[:3] %}
+                    <div class="p-3 bg-red-50 rounded border-l-4 border-red-500">
+                        <p class="font-semibold text-sm">{{ conflict.type|capitalize }} - {{ conflict.date.strftime('%d/%m') }}</p>
+                        <p class="text-xs text-gray-600">{{ conflict.lessons|length }} aulas em conflito</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('admin.view_conflicts') }}" class="btn btn-sm btn-danger w-full">
+                    Ver Todos os Conflitos
+                </a>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
+                    <p class="text-gray-600">Nenhum conflito detectado!</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Ocupação de Salas -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-bold mb-4">Ocupação de Salas (Próximos 7 dias)</h3>
+                <div class="space-y-3">
+                    {% for room in room_occupancy[:5] %}
+                    <div>
+                        <div class="flex items-center justify-between text-sm mb-1">
+                            <span class="font-medium">{{ room.room }}</span>
+                            <span class="text-gray-600">{{ room.occupancy_rate }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full" 
+                                 style="width: {{ room.occupancy_rate }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+{% if revenue_chart %}
+// Gráfico de Receita
+new Chart(document.getElementById('revenueChart'), {
+    type: 'line',
+    data: {{ revenue_chart|tojson }},
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        }
+    }
+});
+{% endif %}
+
+{% if students_chart %}
+// Gráfico de Alunos por Instrumento
+new Chart(document.getElementById('studentsChart'), {
+    type: 'doughnut',
+    data: {{ students_chart|tojson }},
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+{% endif %}
+
+{% if attendance_chart %}
+// Gráfico de Frequência
+new Chart(document.getElementById('attendanceChart'), {
+    type: 'line',
+    data: {{ attendance_chart|tojson }},
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+{% endif %}
+
+{% if lesson_distribution %}
+// Distribuição de Aulas
+new Chart(document.getElementById('lessonDistChart'), {
+    type: 'bar',
+    data: {{ lesson_distribution|tojson }},
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        }
+    }
+});
+{% endif %}
+</script>
 {% endblock %}

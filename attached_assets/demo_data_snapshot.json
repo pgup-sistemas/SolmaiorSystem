@@ -1,0 +1,130 @@
+{
+  "users": [
+    {
+      "email": "admin1@solmaior.com",
+      "role": "admin"
+    },
+    {
+      "email": "admin2@solmaior.com",
+      "role": "admin"
+    },
+    {
+      "email": "secretaria1@solmaior.com",
+      "role": "secretary"
+    },
+    {
+      "email": "secretaria2@solmaior.com",
+      "role": "secretary"
+    },
+    {
+      "email": "prof.luiza@solmaior.com",
+      "role": "teacher"
+    },
+    {
+      "email": "prof.diego@solmaior.com",
+      "role": "teacher"
+    },
+    {
+      "email": "prof.carolina@solmaior.com",
+      "role": "teacher"
+    },
+    {
+      "email": "aluno.arthur@solmaior.com",
+      "role": "student"
+    },
+    {
+      "email": "aluna.marina@solmaior.com",
+      "role": "student"
+    },
+    {
+      "email": "aluna.isabela@solmaior.com",
+      "role": "student"
+    }
+  ],
+  "rooms": [
+    "Sala Beethoven",
+    "Sala Villa-Lobos",
+    "Sala Elis Regina",
+    "Sala Tom Jobim",
+    "Sala Choro"
+  ],
+  "recitals": [
+    "Recital de Primavera #1",
+    "Recital de Primavera #2",
+    "Recital de Primavera #3",
+    "Recital de Primavera #4",
+    "Recital de Primavera #5"
+  ],
+  "lessons": [
+    {
+      "student": "Arthur Silva",
+      "teacher": "Luiza Ferraz",
+      "date": "2025-10-27",
+      "room": "Sala Beethoven"
+    },
+    {
+      "student": "Marina Costa",
+      "teacher": "Diego Rodrigues",
+      "date": "2025-10-28",
+      "room": "Sala Villa-Lobos"
+    },
+    {
+      "student": "Isabela Prado",
+      "teacher": "Carolina Nogueira",
+      "date": "2025-10-29",
+      "room": "Sala Elis Regina"
+    }
+  ],
+  "payments": [
+    {
+      "student": "Isabela Prado",
+      "status": "pending",
+      "due_date": "2025-10-10",
+      "method": null
+    },
+    {
+      "student": "Marina Costa",
+      "status": "pending",
+      "due_date": "2025-10-10",
+      "method": null
+    },
+    {
+      "student": "Arthur Silva",
+      "status": "pending",
+      "due_date": "2025-10-10",
+      "method": null
+    },
+    {
+      "student": "Isabela Prado",
+      "status": "paid",
+      "due_date": "2025-09-10",
+      "method": "credit_card"
+    },
+    {
+      "student": "Marina Costa",
+      "status": "paid",
+      "due_date": "2025-09-10",
+      "method": "credit_card"
+    },
+    {
+      "student": "Arthur Silva",
+      "status": "paid",
+      "due_date": "2025-09-10",
+      "method": "credit_card"
+    }
+  ],
+  "documents": [
+    "Contrato Arthur",
+    "Plano de Estudos Piano",
+    "Relatório Vocal",
+    "Manual de Aulas",
+    "Partitura Especial Violão"
+  ],
+  "news": [
+    "Festival de Inverno",
+    "Masterclass de Piano",
+    "Campanha de Matrículas",
+    "Recital Beneficente",
+    "Workshop de Improvisação"
+  ]
+}

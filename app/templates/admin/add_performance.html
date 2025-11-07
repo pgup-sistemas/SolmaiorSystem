@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Adicionar Performance - {{ recital.title }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 0 auto; padding: 2rem;">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-2xl font-bold">Adicionar Performance ao Recital</h1>
+        <a href="{{ url_for('admin.recital_detail', id=recital.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-xl font-bold">{{ recital.title }}</h2>
+            <p class="text-sm text-gray-600">{{ recital.event_date.strftime('%d/%m/%Y às %H:%M') }}</p>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="form-group">
+                    <label for="piece_title">Título da Peça *</label>
+                    <input type="text" class="form-control" id="piece_title" name="piece_title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="composer">Compositor</label>
+                    <input type="text" class="form-control" id="composer" name="composer">
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="form-group">
+                        <label for="performance_type">Tipo de Performance *</label>
+                        <select class="form-control" id="performance_type" name="performance_type" required>
+                            <option value="">Selecione...</option>
+                            <option value="solo">Solo</option>
+                            <option value="duo">Duo</option>
+                            <option value="group">Grupo</option>
+                            <option value="choir">Coral</option>
+                            <option value="band">Banda</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration_minutes">Duração (minutos)</label>
+                        <input type="number" class="form-control" id="duration_minutes" name="duration_minutes" min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="order_number">Ordem no Programa</label>
+                        <input type="number" class="form-control" id="order_number" name="order_number" min="1">
+                    </div>
+                </div>
+
+                <hr class="my-6">
+
+                <h3 class="text-lg font-bold mb-4">Participantes (Alunos)</h3>
+                <div class="form-group">
+                    <label>Selecione os alunos participantes</label>
+                    <div class="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto p-4 border rounded">
+                        {% for student in students %}
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" 
+                                   id="student_{{ student.id }}" name="student_ids" value="{{ student.id }}">
+                            <label class="form-check-label" for="student_{{ student.id }}">
+                                {{ student.user.full_name }} ({{ student.instrument }})
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-bold mb-4 mt-6">Acompanhantes (Professores)</h3>
+                <div class="form-group">
+                    <label>Selecione professores acompanhantes (opcional)</label>
+                    <div class="grid grid-cols-2 gap-3 p-4 border rounded">
+                        {% for teacher in teachers %}
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" 
+                                   id="teacher_{{ teacher.id }}" name="teacher_ids" value="{{ teacher.id }}">
+                            <label class="form-check-label" for="teacher_{{ teacher.id }}">
+                                {{ teacher.user.full_name }} ({{ teacher.instrument }})
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-8">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar Performance
+                    </button>
+                    <a href="{{ url_for('admin.recital_detail', id=recital.id) }}" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

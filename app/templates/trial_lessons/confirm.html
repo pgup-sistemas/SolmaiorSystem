@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar Aula Experimental{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12">
+    <div class="container mx-auto px-4">
+        <div class="max-w-2xl mx-auto">
+            <div class="card shadow-2xl">
+                <div class="card-body p-8">
+                    <div class="text-center mb-8">
+                        <div class="text-6xl mb-4">🎵</div>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">Confirme Sua Presença</h1>
+                        <p class="text-gray-600">Aula Experimental de {{ trial.instrument }}</p>
+                    </div>
+
+                    <div class="bg-blue-50 rounded-lg p-6 mb-6">
+                        <h2 class="text-xl font-bold mb-4 text-blue-800">📋 Detalhes do Agendamento</h2>
+                        
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <i class="fas fa-user w-8 text-blue-600"></i>
+                                <div>
+                                    <p class="text-sm text-gray-600">Nome</p>
+                                    <p class="font-semibold">{{ trial.full_name }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center">
+                                <i class="fas fa-guitar w-8 text-blue-600"></i>
+                                <div>
+                                    <p class="text-sm text-gray-600">Instrumento</p>
+                                    <p class="font-semibold">{{ trial.instrument }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar w-8 text-blue-600"></i>
+                                <div>
+                                    <p class="text-sm text-gray-600">Data</p>
+                                    <p class="font-semibold">{{ trial.scheduled_date.strftime('%d/%m/%Y') }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center">
+                                <i class="fas fa-clock w-8 text-blue-600"></i>
+                                <div>
+                                    <p class="text-sm text-gray-600">Horário</p>
+                                    <p class="font-semibold">{{ trial.scheduled_time.strftime('%H:%M') }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center">
+                                <i class="fas fa-hourglass-half w-8 text-blue-600"></i>
+                                <div>
+                                    <p class="text-sm text-gray-600">Duração</p>
+                                    <p class="font-semibold">{{ trial.duration_minutes }} minutos</p>
+                                </div>
+                            </div>
+
+                            {% if trial.assigned_teacher %}
+                            <div class="flex items-center">
+                                <i class="fas fa-chalkboard-teacher w-8 text-blue-600"></i>
+                                <div>
+                                    <p class="text-sm text-gray-600">Professor(a)</p>
+                                    <p class="font-semibold">{{ trial.assigned_teacher.user.full_name }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if trial.room %}
+                            <div class="flex items-center">
+                                <i class="fas fa-door-open w-8 text-blue-600"></i>
+                                <div>
+                                    <p class="text-sm text-gray-600">Sala</p>
+                                    <p class="font-semibold">{{ trial.room.name }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                        <div class="flex">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-3"></i>
+                            <div>
+                                <h3 class="font-bold text-yellow-800 mb-2">Importante:</h3>
+                                <ul class="text-sm text-yellow-700 space-y-1">
+                                    <li>• Chegue com 10 minutos de antecedência</li>
+                                    <li>• Traga seu instrumento (se tiver)</li>
+                                    <li>• Em caso de imprevisto, avise com antecedência</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <form method="POST" action="{{ url_for('trial_lessons.user_confirm_accept', token=token) }}">
+                            <button type="submit" class="btn btn-success w-full py-4 text-lg">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Confirmar Presença
+                            </button>
+                        </form>
+
+                        <button type="button" class="btn btn-danger w-full py-4 text-lg" 
+                                onclick="showDeclineForm()">
+                            <i class="fas fa-times-circle mr-2"></i>
+                            Não Poderei Comparecer
+                        </button>
+                    </div>
+
+                    <!-- Formulário de recusa (escondido) -->
+                    <div id="declineForm" style="display: none;" class="mt-6 p-4 bg-red-50 rounded">
+                        <h3 class="font-bold text-red-800 mb-3">Motivo da recusa (opcional):</h3>
+                        <form method="POST" action="{{ url_for('trial_lessons.user_confirm_decline', token=token) }}">
+                            <textarea class="form-control mb-3" name="decline_reason" rows="3" 
+                                      placeholder="Conte-nos o motivo..."></textarea>
+                            <div class="flex gap-2">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-paper-plane"></i> Enviar Recusa
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="hideDeclineForm()">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-center text-gray-600 mt-6">
+                <i class="fas fa-phone mr-2"></i>
+                Dúvidas? Entre em contato: {{ trial.phone }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+function showDeclineForm() {
+    document.getElementById('declineForm').style.display = 'block';
+}
+
+function hideDeclineForm() {
+    document.getElementById('declineForm').style.display = 'none';
+}
+</script>
+{% endblock %}

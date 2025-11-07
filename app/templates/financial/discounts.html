@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Descontos{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Gerenciar Descontos</h1>
+            <p class="text-gray-600">Configure descontos automáticos e manuais</p>
+        </div>
+        <a href="{{ url_for('financial.create_discount') }}" 
+           class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+            ➕ Novo Desconto
+        </a>
+    </div>
+
+    <!-- Lista de Descontos -->
+    <div class="grid gap-4">
+        {% if discounts %}
+            {% for discount in discounts %}
+            <div class="bg-white rounded-lg shadow-md p-6 {% if not discount.is_active %}opacity-60{% endif %}">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-xl font-semibold text-gray-900">{{ discount.name }}</h3>
+                            <span class="px-3 py-1 text-sm rounded-full 
+                                {% if discount.is_active %}bg-green-100 text-green-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {% if discount.is_active %}✓ Ativo{% else %}✗ Inativo{% endif %}
+                            </span>
+                            {% if discount.auto_apply %}
+                            <span class="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800">
+                                🤖 Auto-aplicável
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        {% if discount.description %}
+                        <p class="text-gray-600 mb-4">{{ discount.description }}</p>
+                        {% endif %}
+
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="font-medium text-gray-700">Tipo:</span>
+                                <span class="text-gray-900">
+                                    {% if discount.discount_type == 'percentage' %}
+                                        Percentual ({{ discount.discount_value }}%)
+                                    {% else %}
+                                        Valor Fixo (R$ {{ discount.discount_value }})
+                                    {% endif %}
+                                </span>
+                            </div>
+                            
+                            {% if discount.condition_type %}
+                            <div>
+                                <span class="font-medium text-gray-700">Condição:</span>
+                                <span class="text-gray-900">
+                                    {% if discount.condition_type == 'attendance_rate' %}
+                                        Frequência >= {{ discount.condition_value }}%
+                                    {% elif discount.condition_type == 'early_payment' %}
+                                        Pagamento antecipado
+                                    {% elif discount.condition_type == 'sibling' %}
+                                        Irmão matriculado
+                                    {% elif discount.condition_type == 'veteran' %}
+                                        Aluno antigo
+                                    {% else %}
+                                        {{ discount.condition_type }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if discount.valid_from or discount.valid_until %}
+                            <div>
+                                <span class="font-medium text-gray-700">Validade:</span>
+                                <span class="text-gray-900">
+                                    {% if discount.valid_from %}{{ discount.valid_from.strftime('%d/%m/%Y') }}{% else %}-{% endif %} 
+                                    até 
+                                    {% if discount.valid_until %}{{ discount.valid_until.strftime('%d/%m/%Y') }}{% else %}∞{% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="ml-4">
+                        <form method="POST" action="{{ url_for('financial.toggle_discount', discount_id=discount.id) }}">
+                            <button type="submit" 
+                                    class="px-4 py-2 rounded-lg font-medium
+                                    {% if discount.is_active %}
+                                        bg-gray-200 text-gray-700 hover:bg-gray-300
+                                    {% else %}
+                                        bg-green-600 text-white hover:bg-green-700
+                                    {% endif %}">
+                                {% if discount.is_active %}Desativar{% else %}Ativar{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="bg-gray-50 rounded-lg p-8 text-center">
+                <p class="text-gray-600 mb-4">Nenhum desconto configurado ainda.</p>
+                <a href="{{ url_for('financial.create_discount') }}" 
+                   class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Criar Primeiro Desconto
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Link para Descontos por Frequência -->
+    <div class="mt-8 bg-blue-50 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">📊 Descontos Automáticos por Frequência</h3>
+        <p class="text-gray-600 mb-4">Visualize e aplique descontos baseados na frequência dos alunos</p>
+        <a href="{{ url_for('financial.frequency_discounts') }}" 
+           class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Ver Descontos por Frequência →
+        </a>
+    </div>
+</div>
+{% endblock %}

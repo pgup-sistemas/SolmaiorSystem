@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Painel Secretaria - Solmaior{% endblock %}
+{% block title %}Painel Secretaria - Sol Maior{% endblock %}
 
 {% block content %}
 <div class="bg-indigo-600 text-white py-8">
@@ -51,9 +51,9 @@
                class="block p-3 bg-orange-50 rounded hover:bg-orange-100 transition text-center">
                 <i class="fas fa-redo text-orange-600 mr-2"></i>Reposições
             </a>
-            <a href="{{ url_for('admin.trial_lessons') }}" 
+            <a href="{{ url_for('trial_lessons.index') }}" 
                class="block p-3 bg-green-50 rounded hover:bg-green-100 transition text-center">
-                <i class="fas fa-list text-green-600 mr-2"></i>Solicitações
+                <i class="fas fa-clipboard-list text-green-600 mr-2"></i>Aulas Experimentais
             </a>
         </div>
     </div>

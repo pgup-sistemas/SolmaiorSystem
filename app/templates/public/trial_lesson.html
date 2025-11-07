@@ -1,82 +1,195 @@
 {% extends "base.html" %}
 
-{% block title %}Aula Experimental - Solmaior{% endblock %}
+{% block title %}Agendar Aula Experimental - Sol Maior{% endblock %}
 
 {% block content %}
-<div class="bg-blue-600 text-white py-12">
-    <div class="container mx-auto px-4">
-        <h1 class="text-4xl font-bold text-center">Aula Experimental Gratuita</h1>
-        <p class="text-center text-xl mt-4">Experimente uma aula sem compromisso!</p>
-        <nav class="text-sm mt-4 text-center opacity-90">
-            <a href="{{ url_for('public.index') }}" class="hover:underline">Início</a>
-            <span class="mx-2">/</span>
-            <span>Aula Experimental</span>
-        </nav>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Agende sua Aula Experimental Gratuita
+            </h1>
+            <p class="hero-subtitle">
+                Experimente uma aula sem compromisso e descubra o prazer de aprender música com professores qualificados!
+            </p>
+        </div>
     </div>
-</div>
+</section>
 
-<div class="container mx-auto px-4 py-16">
-    <div class="max-w-2xl mx-auto">
-        <div class="bg-white rounded-lg shadow-lg p-8">
-            <h2 class="text-2xl font-bold mb-6 text-center">Preencha o formulário abaixo</h2>
+<!-- Form Section -->
+<section class="section">
+    <div class="container" style="max-width: 700px;">
+        <div class="card">
+            <h2 style="font-size: 1.875rem; text-align: center; margin-bottom: var(--space-8); color: var(--gray-900);">
+                Preencha seus dados
+            </h2>
             
-            <form method="POST" action="{{ url_for('public.trial_lesson') }}">
+            <form method="POST" action="{{ url_for('public.trial_lesson') }}" id="trial-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="mb-4">
-                    <label for="full_name" class="block text-gray-700 font-semibold mb-2">
-                        <i class="fas fa-user mr-1"></i> Nome Completo *
+                
+                <div style="margin-bottom: var(--space-6);">
+                    <label for="full_name" style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--gray-700);">
+                        <i class="fas fa-user" style="color: var(--primary-500); margin-right: var(--space-2);"></i>
+                        Nome Completo *
                     </label>
-                    <input type="text" id="full_name" name="full_name" required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <input type="text" 
+                           id="full_name" 
+                           name="full_name" 
+                           required
+                           placeholder="Digite seu nome completo"
+                           style="width: 100%; padding: var(--space-3) var(--space-4); border: 1px solid var(--gray-300); border-radius: var(--radius-lg); font-size: 0.9375rem; transition: all var(--transition-base);"
+                           onfocus="this.style.borderColor='var(--primary-500)'; this.style.boxShadow='0 0 0 3px rgba(0, 139, 205, 0.1)';"
+                           onblur="this.style.borderColor='var(--gray-300)'; this.style.boxShadow='none';">
                 </div>
                 
-                <div class="mb-4">
-                    <label for="email" class="block text-gray-700 font-semibold mb-2">
-                        <i class="fas fa-envelope mr-1"></i> Email *
+                <div style="margin-bottom: var(--space-6);">
+                    <label for="email" style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--gray-700);">
+                        <i class="fas fa-envelope" style="color: var(--primary-500); margin-right: var(--space-2);"></i>
+                        Email *
                     </label>
-                    <input type="email" id="email" name="email" required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           required
+                           placeholder="seu@email.com"
+                           style="width: 100%; padding: var(--space-3) var(--space-4); border: 1px solid var(--gray-300); border-radius: var(--radius-lg); font-size: 0.9375rem; transition: all var(--transition-base);"
+                           onfocus="this.style.borderColor='var(--primary-500)'; this.style.boxShadow='0 0 0 3px rgba(0, 139, 205, 0.1)';"
+                           onblur="this.style.borderColor='var(--gray-300)'; this.style.boxShadow='none';">
                 </div>
                 
-                <div class="mb-4">
-                    <label for="phone" class="block text-gray-700 font-semibold mb-2">
-                        <i class="fas fa-phone mr-1"></i> Telefone *
+                <div style="margin-bottom: var(--space-6);">
+                    <label for="phone" style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--gray-700);">
+                        <i class="fas fa-phone" style="color: var(--primary-500); margin-right: var(--space-2);"></i>
+                        Telefone *
                     </label>
-                    <input type="tel" id="phone" name="phone" required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <input type="tel" 
+                           id="phone" 
+                           name="phone" 
+                           required
+                           placeholder="(11) 99999-9999"
+                           style="width: 100%; padding: var(--space-3) var(--space-4); border: 1px solid var(--gray-300); border-radius: var(--radius-lg); font-size: 0.9375rem; transition: all var(--transition-base);"
+                           onfocus="this.style.borderColor='var(--primary-500)'; this.style.boxShadow='0 0 0 3px rgba(0, 139, 205, 0.1)';"
+                           onblur="this.style.borderColor='var(--gray-300)'; this.style.boxShadow='none';">
                 </div>
                 
-                <div class="mb-4">
-                    <label for="instrument" class="block text-gray-700 font-semibold mb-2">
-                        <i class="fas fa-guitar mr-1"></i> Instrumento de Interesse *
+                <div style="margin-bottom: var(--space-6);">
+                    <label for="instrument" style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--gray-700);">
+                        <i class="fas fa-guitar" style="color: var(--primary-500); margin-right: var(--space-2);"></i>
+                        Instrumento de Interesse *
                     </label>
-                    <select id="instrument" name="instrument" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">Selecione...</option>
+                    <select id="instrument" 
+                            name="instrument" 
+                            required
+                            style="width: 100%; padding: var(--space-3) var(--space-4); border: 1px solid var(--gray-300); border-radius: var(--radius-lg); font-size: 0.9375rem; transition: all var(--transition-base); background-color: white;"
+                            onfocus="this.style.borderColor='var(--primary-500)'; this.style.boxShadow='0 0 0 3px rgba(0, 139, 205, 0.1)';"
+                            onblur="this.style.borderColor='var(--gray-300)'; this.style.boxShadow='none';">
+                        <option value="">Selecione um instrumento...</option>
                         <option value="Piano">Piano</option>
                         <option value="Violão">Violão</option>
                         <option value="Guitarra">Guitarra</option>
                         <option value="Bateria">Bateria</option>
                         <option value="Violino">Violino</option>
                         <option value="Canto">Canto</option>
+                        <option value="Saxofone">Saxofone</option>
+                        <option value="Flauta">Flauta</option>
+                        <option value="Baixo">Baixo</option>
                         <option value="Outro">Outro</option>
                     </select>
                 </div>
                 
-                <div class="mb-6">
-                    <label for="message" class="block text-gray-700 font-semibold mb-2">
-                        <i class="fas fa-comment mr-1"></i> Mensagem (opcional)
+                <div style="margin-bottom: var(--space-8);">
+                    <label for="message" style="display: block; margin-bottom: var(--space-2); font-weight: 600; color: var(--gray-700);">
+                        <i class="fas fa-comment" style="color: var(--primary-500); margin-right: var(--space-2);"></i>
+                        Mensagem (opcional)
                     </label>
-                    <textarea id="message" name="message" rows="4"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                    <textarea id="message" 
+                              name="message" 
+                              rows="4"
+                              placeholder="Conte-nos um pouco sobre sua experiência musical ou dúvidas..."
+                              style="width: 100%; padding: var(--space-3) var(--space-4); border: 1px solid var(--gray-300); border-radius: var(--radius-lg); font-size: 0.9375rem; font-family: inherit; resize: vertical; transition: all var(--transition-base);"
+                              onfocus="this.style.borderColor='var(--primary-500)'; this.style.boxShadow='0 0 0 3px rgba(0, 139, 205, 0.1)';"
+                              onblur="this.style.borderColor='var(--gray-300)'; this.style.boxShadow='none';"></textarea>
                 </div>
                 
-                <button type="submit" 
-                        class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition text-lg">
-                    <i class="fas fa-paper-plane mr-2"></i>Enviar Solicitação
+                <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1rem;">
+                    <i class="fas fa-paper-plane"></i>
+                    Enviar Solicitação
                 </button>
+                
+                <p style="text-align: center; margin-top: var(--space-4); color: var(--gray-600); font-size: 0.875rem;">
+                    <i class="fas fa-lock" style="margin-right: var(--space-1);"></i>
+                    Seus dados estão seguros conosco
+                </p>
             </form>
         </div>
+        
+        <!-- Info Cards -->
+        <div class="grid md-grid-cols-3 gap-6" style="margin-top: var(--space-12);">
+            <div class="card" style="text-align: center; padding: var(--space-6);">
+                <div style="width: 56px; height: 56px; margin: 0 auto var(--space-3); display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%); border-radius: var(--radius-xl);">
+                    <i class="fas fa-gift" style="font-size: 1.5rem; color: var(--primary-600);"></i>
+                </div>
+                <h3 style="font-weight: 700; margin-bottom: var(--space-2); color: var(--gray-900);">100% Gratuito</h3>
+                <p style="color: var(--gray-600); font-size: 0.875rem;">Sem compromisso ou taxas</p>
+            </div>
+            <div class="card" style="text-align: center; padding: var(--space-6);">
+                <div style="width: 56px; height: 56px; margin: 0 auto var(--space-3); display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%); border-radius: var(--radius-xl);">
+                    <i class="fas fa-user-check" style="font-size: 1.5rem; color: var(--primary-600);"></i>
+                </div>
+                <h3 style="font-weight: 700; margin-bottom: var(--space-2); color: var(--gray-900);">Professores Qualificados</h3>
+                <p style="color: var(--gray-600); font-size: 0.875rem;">Equipe experiente e dedicada</p>
+            </div>
+            <div class="card" style="text-align: center; padding: var(--space-6);">
+                <div style="width: 56px; height: 56px; margin: 0 auto var(--space-3); display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%); border-radius: var(--radius-xl);">
+                    <i class="fas fa-clock" style="font-size: 1.5rem; color: var(--primary-600);"></i>
+                </div>
+                <h3 style="font-weight: 700; margin-bottom: var(--space-2); color: var(--gray-900);">Horários Flexíveis</h3>
+                <p style="color: var(--gray-600); font-size: 0.875rem;">Escolha o melhor para você</p>
+            </div>
+        </div>
     </div>
-</div>
+</section>
+
+<!-- Benefícios Section -->
+<section class="section bg-gray">
+    <div class="container">
+        <div class="section-title">
+            <h2>Por que fazer uma aula experimental?</h2>
+            <p>Descubra os benefícios de experimentar antes de se matricular</p>
+        </div>
+        
+        <div class="grid md-grid-cols-3 gap-8">
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h3 class="card-title">Conheça Nosso Método</h3>
+                <p class="card-text">
+                    Experimente nossa metodologia de ensino personalizada e veja como ela se adapta ao seu estilo de aprendizado.
+                </p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="card-title">Conheça os Professores</h3>
+                <p class="card-text">
+                    Tenha contato direto com nossos professores qualificados e veja como eles podem ajudá-lo a alcançar seus objetivos.
+                </p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h3 class="card-title">Conheça Nossa Estrutura</h3>
+                <p class="card-text">
+                    Visite nossas instalações modernas e confortáveis, equipadas com instrumentos de qualidade para seu aprendizado.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

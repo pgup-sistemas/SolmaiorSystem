@@ -1,54 +1,129 @@
 {% extends "base.html" %}
 
-{% block title %}Sobre - Solmaior{% endblock %}
+{% block title %}Sobre - Sol Maior{% endblock %}
 
 {% block content %}
-<div class="bg-blue-600 text-white py-12">
-    <div class="container mx-auto px-4">
-        <h1 class="text-4xl font-bold text-center">Sobre a Solmaior</h1>
-        <nav class="text-sm mt-4 text-center opacity-90">
-            <a href="{{ url_for('public.index') }}" class="hover:underline">Início</a>
-            <span class="mx-2">/</span>
-            <span>Sobre</span>
-        </nav>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Sobre a Sol Maior
+            </h1>
+            <p class="hero-subtitle">
+                Uma escola de música dedicada a formar músicos com excelência e paixão
+            </p>
+        </div>
     </div>
-</div>
+</section>
 
-<div class="container mx-auto px-4 py-16">
-    <div class="max-w-4xl mx-auto">
-        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
-            <h2 class="text-3xl font-bold mb-4">Nossa História</h2>
-            <p class="text-gray-700 text-lg mb-4">
-                A Solmaior é uma escola de música dedicada a formar músicos com excelência e paixão. 
+<!-- História Section -->
+<section class="section">
+    <div class="container" style="max-width: 900px;">
+        <div class="card" style="margin-bottom: var(--space-12);">
+            <h2 style="font-size: 2.25rem; font-weight: 700; margin-bottom: var(--space-6); color: var(--gray-900);">
+                Nossa História
+            </h2>
+            <p style="color: var(--gray-700); font-size: 1.125rem; line-height: 1.8; margin-bottom: var(--space-4);">
+                A Sol Maior é uma escola de música dedicada a formar músicos com excelência e paixão. 
                 Com anos de experiência no ensino musical, oferecemos cursos para todos os níveis e idades.
             </p>
-            <p class="text-gray-700 text-lg">
+            <p style="color: var(--gray-700); font-size: 1.125rem; line-height: 1.8;">
                 Nossa missão é proporcionar educação musical de qualidade, desenvolvendo não apenas 
                 habilidades técnicas, mas também a sensibilidade artística e o amor pela música.
             </p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h3 class="text-2xl font-bold mb-4 text-blue-600">
-                    <i class="fas fa-bullseye mr-2"></i>Missão
-                </h3>
-                <p class="text-gray-700">
+        <!-- Missão e Visão -->
+        <div class="grid md-grid-cols-2 gap-8">
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <h3 class="card-title">Missão</h3>
+                <p class="card-text">
                     Oferecer ensino musical de excelência, formando músicos completos e preparados 
                     para os desafios artísticos e profissionais.
                 </p>
             </div>
             
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h3 class="text-2xl font-bold mb-4 text-blue-600">
-                    <i class="fas fa-eye mr-2"></i>Visão
-                </h3>
-                <p class="text-gray-700">
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <h3 class="card-title">Visão</h3>
+                <p class="card-text">
                     Ser referência em educação musical, reconhecida pela qualidade do ensino e 
                     pela formação de músicos talentosos.
                 </p>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- Valores Section -->
+<section class="section bg-gray">
+    <div class="container">
+        <div class="section-title">
+            <h2>Nossos Valores</h2>
+            <p>Os princípios que guiam nossa escola e definem nossa identidade</p>
+        </div>
+        
+        <div class="grid md-grid-cols-3 gap-8">
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h3 class="card-title">Paixão pela Música</h3>
+                <p class="card-text">
+                    Acreditamos que o amor pela música é o combustível para o aprendizado contínuo e a excelência artística.
+                </p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3 class="card-title">Excelência</h3>
+                <p class="card-text">
+                    Comprometidos em oferecer o melhor ensino musical, com profissionais qualificados e metodologias eficazes.
+                </p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+                <h3 class="card-title">Comprometimento</h3>
+                <p class="card-text">
+                    Dedicação total ao desenvolvimento musical de cada aluno, respeitando seu ritmo e objetivos pessoais.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section">
+    <div class="container">
+        <div class="card" style="text-align: center; max-width: 800px; margin: 0 auto;">
+            <h2 style="font-size: 2.25rem; margin-bottom: var(--space-6);">
+                Venha conhecer a Sol Maior
+            </h2>
+            <p style="font-size: 1.125rem; color: var(--gray-600); margin-bottom: var(--space-8);">
+                Agende uma visita ou uma aula experimental gratuita e descubra como podemos ajudá-lo em sua jornada musical!
+            </p>
+            <div class="flex gap-4" style="justify-content: center; flex-wrap: wrap;">
+                <a href="{{ url_for('public.trial_lesson') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-calendar-check"></i>
+                    Agendar Aula Experimental
+                </a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-outline btn-lg">
+                    <i class="fas fa-user-plus"></i>
+                    Cadastre-se Agora
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

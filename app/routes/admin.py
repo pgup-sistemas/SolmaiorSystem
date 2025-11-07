@@ -1,9 +1,17 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, send_file
 from flask_login import login_required, current_user
 from functools import wraps
 from app import db
-from app.models import User, Teacher, Student, Room, LessonSchedule, Recital, NewsPost, TrialLesson, TeacherAvailability
+from app.models import (
+    User, Teacher, Student, Room, LessonSchedule, Recital, NewsPost, TrialLesson, 
+    TeacherAvailability, RecitalPerformance, RecitalParticipant, LandingPageContent,
+    LandingPageFeature, RecitalInvitation, RecitalCertificate
+)
+from app.services.analytics_service import AnalyticsService
+from app.services.recital_service import RecitalService
+from app.services.pdf_generator import RecitalPDFGenerator
 from datetime import datetime, timedelta
+from io import BytesIO
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -20,16 +28,39 @@ def admin_required(f):
 @login_required
 @admin_required
 def dashboard():
+    # Estatísticas básicas
     total_students = Student.query.count()
     total_teachers = Teacher.query.count()
     total_rooms = Room.query.count()
     pending_trials = TrialLesson.query.filter_by(status='pending').count()
     
+    # Analytics completo
+    analytics = AnalyticsService.get_dashboard_overview()
+    
+    # Gráficos
+    revenue_chart = AnalyticsService.get_revenue_chart(months=6)
+    students_chart = AnalyticsService.get_students_by_instrument()
+    attendance_chart = AnalyticsService.get_attendance_rate_chart(months=6)
+    lesson_distribution = AnalyticsService.get_lesson_distribution()
+    
+    # Conflitos de agenda
+    conflicts = AnalyticsService.get_schedule_conflicts()
+    
+    # Ocupação de salas
+    room_occupancy = AnalyticsService.get_room_occupancy(days=7)
+    
     return render_template('admin/dashboard.html',
                          total_students=total_students,
                          total_teachers=total_teachers,
                          total_rooms=total_rooms,
-                         pending_trials=pending_trials)
+                         pending_trials=pending_trials,
+                         analytics=analytics,
+                         revenue_chart=revenue_chart,
+                         students_chart=students_chart,
+                         attendance_chart=attendance_chart,
+                         lesson_distribution=lesson_distribution,
+                         conflicts=conflicts,
+                         room_occupancy=room_occupancy)
 
 @bp.route('/global-schedule')
 @login_required
@@ -312,3 +343,284 @@ def edit_student(id):
         return redirect(url_for('admin.users'))
     
     return render_template('admin/edit_student.html', student=student)
+
+
+# ============================================================================
+# ROTAS AVANÇADAS DE RECITALS
+# ============================================================================
+
+@bp.route('/recitals/<int:id>')
+@login_required
+@admin_required
+def recital_detail(id):
+    """Visualizar detalhes completos do recital"""
+    recital = Recital.query.get_or_404(id)
+    performances = RecitalPerformance.query.filter_by(recital_id=id).order_by(RecitalPerformance.order_number).all()
+    invitations = RecitalInvitation.query.filter_by(recital_id=id).all()
+    certificates = RecitalCertificate.query.filter_by(recital_id=id).all()
+    
+    return render_template('admin/recital_detail.html',
+                         recital=recital,
+                         performances=performances,
+                         invitations=invitations,
+                         certificates=certificates)
+
+@bp.route('/recitals/<int:id>/add-performance', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_performance(id):
+    """Adicionar performance ao recital"""
+    recital = Recital.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        performance = RecitalPerformance(
+            recital_id=id,
+            performance_type=request.form.get('performance_type'),
+            piece_title=request.form.get('piece_title'),
+            composer=request.form.get('composer'),
+            duration_minutes=request.form.get('duration_minutes', type=int),
+            order_number=request.form.get('order_number', type=int)
+        )
+        
+        db.session.add(performance)
+        db.session.flush()
+        
+        # Adicionar participantes
+        student_ids = request.form.getlist('student_ids')
+        teacher_ids = request.form.getlist('teacher_ids')
+        
+        for student_id in student_ids:
+            if student_id:
+                participant = RecitalParticipant(
+                    performance_id=performance.id,
+                    student_id=int(student_id),
+                    role='performer'
+                )
+                db.session.add(participant)
+        
+        for teacher_id in teacher_ids:
+            if teacher_id:
+                participant = RecitalParticipant(
+                    performance_id=performance.id,
+                    teacher_id=int(teacher_id),
+                    role='accompanist'
+                )
+                db.session.add(participant)
+        
+        db.session.commit()
+        flash('Performance adicionada com sucesso!', 'success')
+        return redirect(url_for('admin.recital_detail', id=id))
+    
+    students = Student.query.filter_by(is_active=True).all()
+    teachers = Teacher.query.filter_by(is_available=True).all()
+    
+    return render_template('admin/add_performance.html',
+                         recital=recital,
+                         students=students,
+                         teachers=teachers)
+
+@bp.route('/recitals/<int:id>/send-invitations', methods=['POST'])
+@login_required
+@admin_required
+def send_recital_invitations(id):
+    """Enviar convites automáticos para todos os participantes"""
+    result = RecitalService.send_recital_invitations(id)
+    
+    if result['success']:
+        flash(f"Convites enviados! {result['invitations_sent']} notificações agendadas.", 'success')
+    else:
+        flash('Erro ao enviar convites.', 'error')
+    
+    return redirect(url_for('admin.recital_detail', id=id))
+
+@bp.route('/recitals/<int:id>/generate-program')
+@login_required
+@admin_required
+def generate_recital_program(id):
+    """Gerar PDF do programa do recital"""
+    recital = Recital.query.get_or_404(id)
+    performances = RecitalPerformance.query.filter_by(recital_id=id).order_by(RecitalPerformance.order_number).all()
+    
+    pdf_gen = RecitalPDFGenerator()
+    pdf_buffer = pdf_gen.generate_recital_program(recital, performances)
+    
+    filename = f"Programa_{recital.title.replace(' ', '_')}.pdf"
+    
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/pdf'
+    )
+
+@bp.route('/recitals/<int:id>/generate-certificates', methods=['POST'])
+@login_required
+@admin_required
+def generate_recital_certificates(id):
+    """Gerar certificados para todos os participantes"""
+    result = RecitalService.generate_certificates(id)
+    
+    if result['success']:
+        flash(f"Certificados gerados! {result['certificates_generated']} certificados criados.", 'success')
+    else:
+        flash(f"Erro: {result.get('error')}", 'error')
+    
+    return redirect(url_for('admin.recital_detail', id=id))
+
+@bp.route('/recitals/<int:id>/complete', methods=['POST'])
+@login_required
+@admin_required
+def complete_recital(id):
+    """Marcar recital como concluído"""
+    recital = Recital.query.get_or_404(id)
+    recital.status = 'completed'
+    db.session.commit()
+    
+    flash('Recital marcado como concluído!', 'success')
+    return redirect(url_for('admin.recital_detail', id=id))
+
+
+# ============================================================================
+# ROTAS DE LANDING PAGE DINÂMICA
+# ============================================================================
+
+@bp.route('/landing-page')
+@login_required
+@admin_required
+def landing_page_settings():
+    """Configurações da landing page"""
+    hero = LandingPageContent.query.filter_by(section='hero').first()
+    about = LandingPageContent.query.filter_by(section='about').first()
+    cta = LandingPageContent.query.filter_by(section='cta').first()
+    features = LandingPageFeature.query.order_by(LandingPageFeature.display_order).all()
+    
+    return render_template('admin/landing_page.html',
+                         hero=hero,
+                         about=about,
+                         cta=cta,
+                         features=features)
+
+@bp.route('/landing-page/section/<section>', methods=['POST'])
+@login_required
+@admin_required
+def update_landing_section(section):
+    """Atualizar seção da landing page"""
+    content = LandingPageContent.query.filter_by(section=section).first()
+    
+    if not content:
+        content = LandingPageContent(section=section)
+        db.session.add(content)
+    
+    content.title = request.form.get('title')
+    content.subtitle = request.form.get('subtitle')
+    content.content = request.form.get('content')
+    content.button_text = request.form.get('button_text')
+    content.button_link = request.form.get('button_link')
+    content.is_active = request.form.get('is_active') == 'on'
+    content.updated_by = current_user.id
+    
+    db.session.commit()
+    
+    flash(f'Seção {section} atualizada com sucesso!', 'success')
+    return redirect(url_for('admin.landing_page_settings'))
+
+@bp.route('/landing-page/features/add', methods=['POST'])
+@login_required
+@admin_required
+def add_landing_feature():
+    """Adicionar feature/card à landing page"""
+    feature = LandingPageFeature(
+        icon=request.form.get('icon'),
+        title=request.form.get('title'),
+        description=request.form.get('description'),
+        display_order=request.form.get('display_order', type=int, default=0),
+        is_active=True
+    )
+    
+    db.session.add(feature)
+    db.session.commit()
+    
+    flash('Feature adicionada com sucesso!', 'success')
+    return redirect(url_for('admin.landing_page_settings'))
+
+@bp.route('/landing-page/features/<int:id>/edit', methods=['POST'])
+@login_required
+@admin_required
+def edit_landing_feature(id):
+    """Editar feature da landing page"""
+    feature = LandingPageFeature.query.get_or_404(id)
+    
+    feature.icon = request.form.get('icon')
+    feature.title = request.form.get('title')
+    feature.description = request.form.get('description')
+    feature.display_order = request.form.get('display_order', type=int)
+    feature.is_active = request.form.get('is_active') == 'on'
+    
+    db.session.commit()
+    
+    flash('Feature atualizada com sucesso!', 'success')
+    return redirect(url_for('admin.landing_page_settings'))
+
+@bp.route('/landing-page/features/<int:id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_landing_feature(id):
+    """Deletar feature da landing page"""
+    feature = LandingPageFeature.query.get_or_404(id)
+    db.session.delete(feature)
+    db.session.commit()
+    
+    flash('Feature excluída com sucesso!', 'success')
+    return redirect(url_for('admin.landing_page_settings'))
+
+
+# ============================================================================
+# ROTAS DE ANALYTICS E CONFLITOS
+# ============================================================================
+
+@bp.route('/analytics/conflicts')
+@login_required
+@admin_required
+def view_conflicts():
+    """Visualização detalhada de conflitos"""
+    conflicts = AnalyticsService.get_schedule_conflicts()
+    
+    return render_template('admin/conflicts.html', conflicts=conflicts)
+
+@bp.route('/analytics/room-occupancy')
+@login_required
+@admin_required
+def room_occupancy():
+    """Análise de ocupação de salas"""
+    days = request.args.get('days', 7, type=int)
+    occupancy_data = AnalyticsService.get_room_occupancy(days=days)
+    
+    return render_template('admin/room_occupancy.html',
+                         occupancy_data=occupancy_data,
+                         days=days)
+
+@bp.route('/analytics/api/revenue-chart')
+@login_required
+@admin_required
+def api_revenue_chart():
+    """API para dados do gráfico de receita"""
+    months = request.args.get('months', 6, type=int)
+    data = AnalyticsService.get_revenue_chart(months=months)
+    return jsonify(data)
+
+@bp.route('/analytics/api/students-chart')
+@login_required
+@admin_required
+def api_students_chart():
+    """API para dados do gráfico de alunos por instrumento"""
+    data = AnalyticsService.get_students_by_instrument()
+    return jsonify(data)
+
+@bp.route('/analytics/api/attendance-chart')
+@login_required
+@admin_required
+def api_attendance_chart():
+    """API para dados do gráfico de frequência"""
+    months = request.args.get('months', 6, type=int)
+    data = AnalyticsService.get_attendance_rate_chart(months=months)
+    return jsonify(data)
