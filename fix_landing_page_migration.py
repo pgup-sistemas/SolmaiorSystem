@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 Script para corrigir a estrutura da tabela landing_page_content
@@ -32,14 +33,16 @@ def table_exists(table_name):
         print(f"Erro ao verificar tabela {table_name}: {e}")
         return False
 
-def add_column_if_not_exists(table_name, column_name, column_type):
+def add_column_if_not_exists(table_name, column_name, column_type, default_value=None):
     """Adiciona uma coluna se ela não existir"""
     if not column_exists(table_name, column_name):
         print(f'  → Adicionando {column_name}...')
         try:
-            with db.engine.connect() as conn:
-                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"))
-                conn.commit()
+            with db.engine.begin() as conn:
+                sql = f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"
+                if default_value is not None:
+                    sql += f" DEFAULT '{default_value}'"
+                conn.execute(text(sql))
             print(f'  ✅ {column_name} adicionada com sucesso')
             return True
         except Exception as e:
@@ -65,11 +68,11 @@ with app.app_context():
         if table_exists('landing_page_content'):
             print('🔄 Passo 2: Corrigindo landing_page_content...')
 
-            # Adicionar background_color
-            add_column_if_not_exists('landing_page_content', 'background_color', 'VARCHAR(20)')
+            # Adicionar background_color com default
+            add_column_if_not_exists('landing_page_content', 'background_color', 'VARCHAR(20)', '#ffffff')
 
-            # Adicionar text_color
-            add_column_if_not_exists('landing_page_content', 'text_color', 'VARCHAR(20)')
+            # Adicionar text_color com default
+            add_column_if_not_exists('landing_page_content', 'text_color', 'VARCHAR(20)', '#000000')
 
             print()
         else:
@@ -82,18 +85,21 @@ with app.app_context():
             print('🔄 Passo 3: Verificando lesson_schedule...')
 
             lesson_columns = {
-                'attendance_confirmed': 'BOOLEAN DEFAULT FALSE',
-                'attendance_status': 'VARCHAR(20)',
-                'confirmed_by': 'INTEGER',
-                'confirmed_at': 'TIMESTAMP',
-                'lesson_notes': 'TEXT',
-                'lesson_content': 'TEXT',
-                'homework_assigned': 'TEXT',
-                'student_progress': 'VARCHAR(20)'
+                'attendance_confirmed': ('BOOLEAN', 'FALSE'),
+                'attendance_status': ('VARCHAR(20)', None),
+                'confirmed_by': ('INTEGER', None),
+                'confirmed_at': ('TIMESTAMP', None),
+                'lesson_notes': ('TEXT', None),
+                'lesson_content': ('TEXT', None),
+                'homework_assigned': ('TEXT', None),
+                'student_progress': ('VARCHAR(20)', None)
             }
 
-            for col_name, col_type in lesson_columns.items():
-                add_column_if_not_exists('lesson_schedule', col_name, col_type)
+            for col_name, (col_type, default) in lesson_columns.items():
+                if default:
+                    add_column_if_not_exists('lesson_schedule', col_name, f'{col_type} DEFAULT {default}')
+                else:
+                    add_column_if_not_exists('lesson_schedule', col_name, col_type)
 
             print()
 
@@ -102,23 +108,26 @@ with app.app_context():
             print('🔄 Passo 4: Verificando payments...')
 
             payment_columns = {
-                'discount_reason': 'VARCHAR(255)',
-                'is_installment': 'BOOLEAN DEFAULT FALSE',
-                'installment_number': 'INTEGER',
-                'installment_total': 'INTEGER',
-                'parent_payment_id': 'INTEGER',
-                'stripe_customer_id': 'VARCHAR(255)',
-                'stripe_payment_intent_id': 'VARCHAR(255)',
-                'stripe_charge_id': 'VARCHAR(255)',
-                'stripe_payment_method_id': 'VARCHAR(255)',
-                'stripe_status': 'VARCHAR(50)',
-                'stripe_client_secret': 'VARCHAR(500)',
-                'stripe_webhook_received': 'BOOLEAN DEFAULT FALSE',
-                'stripe_error_message': 'TEXT'
+                'discount_reason': ('VARCHAR(255)', None),
+                'is_installment': ('BOOLEAN', 'FALSE'),
+                'installment_number': ('INTEGER', None),
+                'installment_total': ('INTEGER', None),
+                'parent_payment_id': ('INTEGER', None),
+                'stripe_customer_id': ('VARCHAR(255)', None),
+                'stripe_payment_intent_id': ('VARCHAR(255)', None),
+                'stripe_charge_id': ('VARCHAR(255)', None),
+                'stripe_payment_method_id': ('VARCHAR(255)', None),
+                'stripe_status': ('VARCHAR(50)', None),
+                'stripe_client_secret': ('VARCHAR(500)', None),
+                'stripe_webhook_received': ('BOOLEAN', 'FALSE'),
+                'stripe_error_message': ('TEXT', None)
             }
 
-            for col_name, col_type in payment_columns.items():
-                add_column_if_not_exists('payments', col_name, col_type)
+            for col_name, (col_type, default) in payment_columns.items():
+                if default:
+                    add_column_if_not_exists('payments', col_name, f'{col_type} DEFAULT {default}')
+                else:
+                    add_column_if_not_exists('payments', col_name, col_type)
 
             print()
 
