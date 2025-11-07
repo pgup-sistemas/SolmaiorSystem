@@ -12,6 +12,7 @@ Funcionalidades:
 - ✅ Controle de agenda de aulas
 - ✅ Gestão de professores e alunos
 - ✅ Administração financeira (mensalidades, descontos, parcelamentos)
+- ✅ **Pagamento online com cartão de crédito via Stripe** (NOVO!)
 - ✅ Gestão de recitais e eventos artísticos
 - ✅ Painel macro administrativo com análises
 - ✅ Portal público institucional
@@ -26,6 +27,7 @@ Funcionalidades:
 - **Flask-Mail 0.9.1** - Envio de emails
 - **PostgreSQL** - Banco de dados relacional
 - **Psycopg2-binary 2.9.9** - Driver PostgreSQL
+- **Stripe 13.2.0** - Gateway de pagamento online
 
 ### Frontend
 - **Tailwind CSS** - Framework CSS (via CDN)
