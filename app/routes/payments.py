@@ -2,7 +2,7 @@ import os
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from functools import wraps
-from app import db
+from app import db, csrf
 from app.models import Payment, Enrollment, Student
 from app.services.stripe_service import StripeService
 
@@ -132,6 +132,7 @@ def cancel_payment(payment_id):
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/webhook', methods=['POST'])
+@csrf.exempt
 def stripe_webhook():
     payload = request.get_data(as_text=True)
     sig_header = request.headers.get('Stripe-Signature')

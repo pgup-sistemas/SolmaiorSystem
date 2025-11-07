@@ -90,9 +90,9 @@ class StripeService:
         domain = self._get_domain()
         
         if not success_url:
-            success_url = f"https://{domain}/student/payment/success?payment_id={payment_id}"
+            success_url = f"https://{domain}/payments/success?payment_id={payment_id}"
         if not cancel_url:
-            cancel_url = f"https://{domain}/student/payment/cancel?payment_id={payment_id}"
+            cancel_url = f"https://{domain}/payments/cancel?payment_id={payment_id}"
         
         amount_cents = int(payment.total_amount * 100)
         
