@@ -1,4 +1,4 @@
-modules = ["python-3.11"]
+modules = ["web", "python-3.12", "nodejs-20"]
 [agent]
 expertMode = true
 
@@ -9,6 +9,10 @@ packages = ["freetype", "glibcLocales"]
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 41679
+externalPort = 3000
 
 [workflows]
 runButton = "Project"
