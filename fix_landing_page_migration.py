@@ -1,11 +1,12 @@
 
 #!/usr/bin/env python3
 """
-Script para corrigir a estrutura da tabela landing_page_content
-Versão corrigida - força a criação das colunas
+Script definitivo para corrigir estrutura do banco de dados
+Versão robusta - garante todas as colunas e tipos corretos
 """
 from app import create_app, db
 from sqlalchemy import text, inspect
+import traceback
 
 app = create_app()
 
@@ -21,7 +22,7 @@ def column_exists(table_name, column_name):
             """))
             return result.fetchone() is not None
     except Exception as e:
-        print(f"Erro ao verificar coluna {column_name}: {e}")
+        print(f"❌ Erro ao verificar coluna {column_name}: {e}")
         return False
 
 def table_exists(table_name):
@@ -30,128 +31,175 @@ def table_exists(table_name):
         inspector = inspect(db.engine)
         return table_name in inspector.get_table_names()
     except Exception as e:
-        print(f"Erro ao verificar tabela {table_name}: {e}")
+        print(f"❌ Erro ao verificar tabela {table_name}: {e}")
         return False
 
-def add_column_if_not_exists(table_name, column_name, column_type, default_value=None):
-    """Adiciona uma coluna se ela não existir"""
-    if not column_exists(table_name, column_name):
-        print(f'  → Adicionando {column_name}...')
-        try:
-            with db.engine.begin() as conn:
-                sql = f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"
-                if default_value is not None:
-                    sql += f" DEFAULT '{default_value}'"
-                conn.execute(text(sql))
-            print(f'  ✅ {column_name} adicionada com sucesso')
-            return True
-        except Exception as e:
-            print(f'  ❌ Erro ao adicionar {column_name}: {e}')
-            return False
-    else:
+def add_column_safe(table_name, column_name, column_type):
+    """Adiciona uma coluna de forma segura"""
+    if column_exists(table_name, column_name):
         print(f'  ✓ {column_name} já existe')
         return True
+    
+    print(f'  → Adicionando {column_name}...')
+    try:
+        with db.engine.begin() as conn:
+            sql = f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"
+            conn.execute(text(sql))
+        print(f'  ✅ {column_name} adicionada')
+        return True
+    except Exception as e:
+        print(f'  ❌ Erro ao adicionar {column_name}: {e}')
+        return False
 
 with app.app_context():
-    print('=' * 60)
-    print('🔧 CORRIGINDO ESTRUTURA DO BANCO DE DADOS')
-    print('=' * 60)
+    print('=' * 70)
+    print('🔧 CORREÇÃO DEFINITIVA DO BANCO DE DADOS')
+    print('=' * 70)
     print()
 
     try:
         # 1. Criar todas as tabelas que não existem
         print('📋 Passo 1: Criando tabelas faltantes...')
         db.create_all()
-        print('✅ Tabelas criadas/verificadas\n')
+        print('✅ Tabelas verificadas/criadas\n')
 
-        # 2. Verificar e corrigir landing_page_content
+        # 2. LANDING PAGE CONTENT - Prioridade máxima
         if table_exists('landing_page_content'):
             print('🔄 Passo 2: Corrigindo landing_page_content...')
-
-            # Adicionar background_color com default
-            add_column_if_not_exists('landing_page_content', 'background_color', 'VARCHAR(20)', '#ffffff')
-
-            # Adicionar text_color com default
-            add_column_if_not_exists('landing_page_content', 'text_color', 'VARCHAR(20)', '#000000')
-
+            
+            add_column_safe('landing_page_content', 'background_color', 'VARCHAR(20)')
+            add_column_safe('landing_page_content', 'text_color', 'VARCHAR(20)')
+            
+            # Atualizar valores NULL para default
+            try:
+                with db.engine.begin() as conn:
+                    conn.execute(text("""
+                        UPDATE landing_page_content 
+                        SET background_color = '#ffffff' 
+                        WHERE background_color IS NULL
+                    """))
+                    conn.execute(text("""
+                        UPDATE landing_page_content 
+                        SET text_color = '#000000' 
+                        WHERE text_color IS NULL
+                    """))
+                print('  ✅ Valores padrão aplicados')
+            except Exception as e:
+                print(f'  ⚠️  Aviso ao atualizar valores: {e}')
+            
             print()
-        else:
-            print('⚠ Tabela landing_page_content não existe, criando...')
-            db.create_all()
-            print('✅ Tabela criada\n')
 
-        # 3. Verificar lesson_schedule
+        # 3. LESSON SCHEDULE
         if table_exists('lesson_schedule'):
-            print('🔄 Passo 3: Verificando lesson_schedule...')
-
-            lesson_columns = {
-                'attendance_confirmed': ('BOOLEAN', 'FALSE'),
-                'attendance_status': ('VARCHAR(20)', None),
-                'confirmed_by': ('INTEGER', None),
-                'confirmed_at': ('TIMESTAMP', None),
-                'lesson_notes': ('TEXT', None),
-                'lesson_content': ('TEXT', None),
-                'homework_assigned': ('TEXT', None),
-                'student_progress': ('VARCHAR(20)', None)
-            }
-
-            for col_name, (col_type, default) in lesson_columns.items():
-                if default:
-                    add_column_if_not_exists('lesson_schedule', col_name, f'{col_type} DEFAULT {default}')
-                else:
-                    add_column_if_not_exists('lesson_schedule', col_name, col_type)
-
+            print('🔄 Passo 3: Corrigindo lesson_schedule...')
+            
+            add_column_safe('lesson_schedule', 'attendance_confirmed', 'BOOLEAN DEFAULT FALSE')
+            add_column_safe('lesson_schedule', 'attendance_status', 'VARCHAR(20)')
+            add_column_safe('lesson_schedule', 'confirmed_by', 'INTEGER')
+            add_column_safe('lesson_schedule', 'confirmed_at', 'TIMESTAMP')
+            add_column_safe('lesson_schedule', 'lesson_notes', 'TEXT')
+            add_column_safe('lesson_schedule', 'lesson_content', 'TEXT')
+            add_column_safe('lesson_schedule', 'homework_assigned', 'TEXT')
+            add_column_safe('lesson_schedule', 'student_progress', 'VARCHAR(20)')
+            
             print()
 
-        # 4. Verificar payments
+        # 4. PAYMENTS
         if table_exists('payments'):
-            print('🔄 Passo 4: Verificando payments...')
-
-            payment_columns = {
-                'discount_reason': ('VARCHAR(255)', None),
-                'is_installment': ('BOOLEAN', 'FALSE'),
-                'installment_number': ('INTEGER', None),
-                'installment_total': ('INTEGER', None),
-                'parent_payment_id': ('INTEGER', None),
-                'stripe_customer_id': ('VARCHAR(255)', None),
-                'stripe_payment_intent_id': ('VARCHAR(255)', None),
-                'stripe_charge_id': ('VARCHAR(255)', None),
-                'stripe_payment_method_id': ('VARCHAR(255)', None),
-                'stripe_status': ('VARCHAR(50)', None),
-                'stripe_client_secret': ('VARCHAR(500)', None),
-                'stripe_webhook_received': ('BOOLEAN', 'FALSE'),
-                'stripe_error_message': ('TEXT', None)
-            }
-
-            for col_name, (col_type, default) in payment_columns.items():
-                if default:
-                    add_column_if_not_exists('payments', col_name, f'{col_type} DEFAULT {default}')
-                else:
-                    add_column_if_not_exists('payments', col_name, col_type)
-
+            print('🔄 Passo 4: Corrigindo payments...')
+            
+            add_column_safe('payments', 'discount_reason', 'VARCHAR(255)')
+            add_column_safe('payments', 'is_installment', 'BOOLEAN DEFAULT FALSE')
+            add_column_safe('payments', 'installment_number', 'INTEGER')
+            add_column_safe('payments', 'installment_total', 'INTEGER')
+            add_column_safe('payments', 'parent_payment_id', 'INTEGER')
+            add_column_safe('payments', 'stripe_customer_id', 'VARCHAR(255)')
+            add_column_safe('payments', 'stripe_payment_intent_id', 'VARCHAR(255)')
+            add_column_safe('payments', 'stripe_charge_id', 'VARCHAR(255)')
+            add_column_safe('payments', 'stripe_payment_method_id', 'VARCHAR(255)')
+            add_column_safe('payments', 'stripe_status', 'VARCHAR(50)')
+            add_column_safe('payments', 'stripe_client_secret', 'VARCHAR(500)')
+            add_column_safe('payments', 'stripe_webhook_received', 'BOOLEAN DEFAULT FALSE')
+            add_column_safe('payments', 'stripe_error_message', 'TEXT')
+            
             print()
 
-        # 5. Verificar students
+        # 5. STUDENTS
         if table_exists('students'):
-            print('🔄 Passo 5: Verificando students...')
-
-            add_column_if_not_exists('students', 'stripe_customer_id', 'VARCHAR(255)')
-
+            print('🔄 Passo 5: Corrigindo students...')
+            
+            add_column_safe('students', 'stripe_customer_id', 'VARCHAR(255)')
+            
             print()
 
-        print('=' * 60)
-        print('✅ MIGRAÇÃO CONCLUÍDA COM SUCESSO!')
-        print('=' * 60)
+        # 6. TRIAL LESSONS
+        if table_exists('trial_lessons'):
+            print('🔄 Passo 6: Corrigindo trial_lessons...')
+            
+            add_column_safe('trial_lessons', 'scheduled_date', 'DATE')
+            add_column_safe('trial_lessons', 'scheduled_time', 'TIME')
+            add_column_safe('trial_lessons', 'assigned_teacher_id', 'INTEGER')
+            add_column_safe('trial_lessons', 'room_id', 'INTEGER')
+            add_column_safe('trial_lessons', 'duration_minutes', 'INTEGER DEFAULT 60')
+            add_column_safe('trial_lessons', 'confirmation_sent', 'BOOLEAN DEFAULT FALSE')
+            add_column_safe('trial_lessons', 'notes', 'TEXT')
+            add_column_safe('trial_lessons', 'confirmation_token', 'VARCHAR(100)')
+            add_column_safe('trial_lessons', 'user_confirmed', 'BOOLEAN DEFAULT FALSE')
+            add_column_safe('trial_lessons', 'user_confirmed_at', 'TIMESTAMP')
+            add_column_safe('trial_lessons', 'user_declined', 'BOOLEAN DEFAULT FALSE')
+            add_column_safe('trial_lessons', 'user_declined_at', 'TIMESTAMP')
+            add_column_safe('trial_lessons', 'reminder_sent', 'BOOLEAN DEFAULT FALSE')
+            add_column_safe('trial_lessons', 'reminder_sent_at', 'TIMESTAMP')
+            
+            print()
+
+        # 7. Verificação final
+        print('🔍 Passo 7: Verificação final...')
         print()
-        print('Você pode agora acessar a aplicação normalmente.')
+        
+        critical_tables = {
+            'landing_page_content': ['background_color', 'text_color'],
+            'lesson_schedule': ['attendance_status', 'lesson_notes'],
+            'payments': ['stripe_customer_id', 'discount_reason'],
+            'students': ['stripe_customer_id'],
+        }
+        
+        all_ok = True
+        for table, columns in critical_tables.items():
+            if table_exists(table):
+                for col in columns:
+                    if not column_exists(table, col):
+                        print(f'  ❌ {table}.{col} FALTANDO!')
+                        all_ok = False
+                    else:
+                        print(f'  ✓ {table}.{col}')
+        
+        print()
+        print('=' * 70)
+        if all_ok:
+            print('✅ MIGRAÇÃO CONCLUÍDA COM SUCESSO!')
+            print('=' * 70)
+            print()
+            print('🎉 Todas as colunas necessárias foram adicionadas.')
+            print('📌 O sistema está pronto para uso.')
+            print()
+            print('Próximo passo: Reinicie o servidor Flask')
+        else:
+            print('⚠️  MIGRAÇÃO CONCLUÍDA COM AVISOS')
+            print('=' * 70)
+            print()
+            print('Algumas colunas podem estar faltando.')
+            print('Revise os erros acima e tente novamente.')
         print()
 
     except Exception as e:
         print()
-        print('=' * 60)
-        print('❌ ERRO DURANTE A MIGRAÇÃO')
-        print('=' * 60)
+        print('=' * 70)
+        print('❌ ERRO CRÍTICO DURANTE A MIGRAÇÃO')
+        print('=' * 70)
         print(f'\nErro: {str(e)}')
         print()
-        import traceback
         traceback.print_exc()
+        print()
+        print('Por favor, verifique o erro e tente novamente.')
+        print()
