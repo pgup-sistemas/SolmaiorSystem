@@ -488,17 +488,47 @@ def complete_recital(id):
 @login_required
 @admin_required
 def landing_page_settings():
-    """Configurações da landing page"""
+    """Configurações da landing page - Dashboard principal"""
+    from app.models import PublicAnnouncement, LandingPageTestimonial, LandingPageGallery
+    
+    # Seções de conteúdo
     hero = LandingPageContent.query.filter_by(section='hero').first()
     about = LandingPageContent.query.filter_by(section='about').first()
     cta = LandingPageContent.query.filter_by(section='cta').first()
     features = LandingPageFeature.query.order_by(LandingPageFeature.display_order).all()
     
+    # Avisos e anúncios
+    announcements = PublicAnnouncement.query.order_by(
+        PublicAnnouncement.priority.desc(),
+        PublicAnnouncement.created_at.desc()
+    ).limit(10).all()
+    
+    # Depoimentos
+    testimonials = LandingPageTestimonial.query.order_by(
+        LandingPageTestimonial.display_order
+    ).all()
+    
+    # Galeria
+    gallery_images = LandingPageGallery.query.filter_by(is_featured=True).limit(6).all()
+    
+    # Estatísticas
+    stats = {
+        'total_announcements': PublicAnnouncement.query.count(),
+        'active_announcements': PublicAnnouncement.query.filter_by(is_active=True).count(),
+        'total_testimonials': LandingPageTestimonial.query.count(),
+        'total_gallery': LandingPageGallery.query.count(),
+        'total_features': LandingPageFeature.query.count()
+    }
+    
     return render_template('admin/landing_page.html',
                          hero=hero,
                          about=about,
                          cta=cta,
-                         features=features)
+                         features=features,
+                         announcements=announcements,
+                         testimonials=testimonials,
+                         gallery_images=gallery_images,
+                         stats=stats)
 
 @bp.route('/landing-page/section/<section>', methods=['POST'])
 @login_required
@@ -572,6 +602,240 @@ def delete_landing_feature(id):
     
     flash('Feature excluída com sucesso!', 'success')
     return redirect(url_for('admin.landing_page_settings'))
+
+
+# ============================================================================
+# GESTÃO DE AVISOS E ANÚNCIOS
+# ============================================================================
+
+@bp.route('/landing-page/announcements')
+@login_required
+@admin_required
+def announcements():
+    """Gerenciar avisos e anúncios públicos"""
+    from app.models import PublicAnnouncement
+    
+    filter_type = request.args.get('type', 'all')
+    filter_status = request.args.get('status', 'all')
+    
+    query = PublicAnnouncement.query
+    
+    if filter_type != 'all':
+        query = query.filter_by(announcement_type=filter_type)
+    
+    if filter_status == 'active':
+        query = query.filter_by(is_active=True)
+    elif filter_status == 'inactive':
+        query = query.filter_by(is_active=False)
+    
+    announcements = query.order_by(
+        PublicAnnouncement.priority.desc(),
+        PublicAnnouncement.created_at.desc()
+    ).all()
+    
+    return render_template('admin/announcements.html', announcements=announcements)
+
+
+@bp.route('/landing-page/announcements/create', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_announcement():
+    """Criar novo aviso/anúncio"""
+    from app.models import PublicAnnouncement
+    
+    if request.method == 'POST':
+        announcement = PublicAnnouncement(
+            title=request.form.get('title'),
+            content=request.form.get('content'),
+            announcement_type=request.form.get('announcement_type', 'info'),
+            icon=request.form.get('icon'),
+            priority=request.form.get('priority', type=int, default=0),
+            is_active=request.form.get('is_active') == 'on',
+            show_on_homepage=request.form.get('show_on_homepage') == 'on',
+            created_by=current_user.id
+        )
+        
+        valid_until = request.form.get('valid_until')
+        if valid_until:
+            announcement.valid_until = datetime.strptime(valid_until, '%Y-%m-%dT%H:%M')
+        
+        db.session.add(announcement)
+        db.session.commit()
+        
+        flash('Anúncio criado com sucesso!', 'success')
+        return redirect(url_for('admin.announcements'))
+    
+    return render_template('admin/create_announcement.html')
+
+
+@bp.route('/landing-page/announcements/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_announcement(id):
+    """Editar aviso/anúncio"""
+    from app.models import PublicAnnouncement
+    
+    announcement = PublicAnnouncement.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        announcement.title = request.form.get('title')
+        announcement.content = request.form.get('content')
+        announcement.announcement_type = request.form.get('announcement_type')
+        announcement.icon = request.form.get('icon')
+        announcement.priority = request.form.get('priority', type=int)
+        announcement.is_active = request.form.get('is_active') == 'on'
+        announcement.show_on_homepage = request.form.get('show_on_homepage') == 'on'
+        
+        valid_until = request.form.get('valid_until')
+        if valid_until:
+            announcement.valid_until = datetime.strptime(valid_until, '%Y-%m-%dT%H:%M')
+        else:
+            announcement.valid_until = None
+        
+        db.session.commit()
+        
+        flash('Anúncio atualizado com sucesso!', 'success')
+        return redirect(url_for('admin.announcements'))
+    
+    return render_template('admin/edit_announcement.html', announcement=announcement)
+
+
+@bp.route('/landing-page/announcements/<int:id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_announcement(id):
+    """Deletar anúncio"""
+    from app.models import PublicAnnouncement
+    
+    announcement = PublicAnnouncement.query.get_or_404(id)
+    db.session.delete(announcement)
+    db.session.commit()
+    
+    flash('Anúncio excluído com sucesso!', 'success')
+    return redirect(url_for('admin.announcements'))
+
+
+# ============================================================================
+# GESTÃO DE DEPOIMENTOS
+# ============================================================================
+
+@bp.route('/landing-page/testimonials')
+@login_required
+@admin_required
+def testimonials():
+    """Gerenciar depoimentos"""
+    from app.models import LandingPageTestimonial
+    
+    testimonials = LandingPageTestimonial.query.order_by(
+        LandingPageTestimonial.display_order
+    ).all()
+    
+    return render_template('admin/testimonials.html', testimonials=testimonials)
+
+
+@bp.route('/landing-page/testimonials/create', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_testimonial():
+    """Criar depoimento"""
+    from app.models import LandingPageTestimonial
+    
+    if request.method == 'POST':
+        testimonial = LandingPageTestimonial(
+            student_name=request.form.get('student_name'),
+            instrument=request.form.get('instrument'),
+            testimonial=request.form.get('testimonial'),
+            rating=request.form.get('rating', type=int, default=5),
+            display_order=request.form.get('display_order', type=int, default=0),
+            is_active=request.form.get('is_active') == 'on',
+            approved_by=current_user.id
+        )
+        
+        db.session.add(testimonial)
+        db.session.commit()
+        
+        flash('Depoimento criado com sucesso!', 'success')
+        return redirect(url_for('admin.testimonials'))
+    
+    return render_template('admin/create_testimonial.html')
+
+
+@bp.route('/landing-page/testimonials/<int:id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_testimonial(id):
+    """Deletar depoimento"""
+    from app.models import LandingPageTestimonial
+    
+    testimonial = LandingPageTestimonial.query.get_or_404(id)
+    db.session.delete(testimonial)
+    db.session.commit()
+    
+    flash('Depoimento excluído com sucesso!', 'success')
+    return redirect(url_for('admin.testimonials'))
+
+
+# ============================================================================
+# GESTÃO DE GALERIA
+# ============================================================================
+
+@bp.route('/landing-page/gallery')
+@login_required
+@admin_required
+def gallery():
+    """Gerenciar galeria de fotos"""
+    from app.models import LandingPageGallery
+    
+    category = request.args.get('category', 'all')
+    
+    query = LandingPageGallery.query
+    
+    if category != 'all':
+        query = query.filter_by(category=category)
+    
+    images = query.order_by(LandingPageGallery.display_order).all()
+    
+    return render_template('admin/gallery.html', images=images, category=category)
+
+
+@bp.route('/landing-page/gallery/upload', methods=['POST'])
+@login_required
+@admin_required
+def upload_gallery_image():
+    """Upload de imagem para galeria"""
+    from app.models import LandingPageGallery
+    
+    image = LandingPageGallery(
+        title=request.form.get('title'),
+        description=request.form.get('description'),
+        image_url=request.form.get('image_url'),  # URL da imagem
+        category=request.form.get('category', 'event'),
+        is_featured=request.form.get('is_featured') == 'on',
+        is_active=True,
+        display_order=request.form.get('display_order', type=int, default=0),
+        uploaded_by=current_user.id
+    )
+    
+    db.session.add(image)
+    db.session.commit()
+    
+    flash('Imagem adicionada à galeria!', 'success')
+    return redirect(url_for('admin.gallery'))
+
+
+@bp.route('/landing-page/gallery/<int:id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_gallery_image(id):
+    """Deletar imagem da galeria"""
+    from app.models import LandingPageGallery
+    
+    image = LandingPageGallery.query.get_or_404(id)
+    db.session.delete(image)
+    db.session.commit()
+    
+    flash('Imagem excluída da galeria!', 'success')
+    return redirect(url_for('admin.gallery'))
 
 
 # ============================================================================

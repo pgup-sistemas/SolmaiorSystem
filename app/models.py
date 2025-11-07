@@ -773,6 +773,8 @@ class LandingPageContent(db.Model):
     button_text = db.Column(db.String(100))
     button_link = db.Column(db.String(200))
     image_url = db.Column(db.String(500))
+    background_color = db.Column(db.String(20))  # hex color
+    text_color = db.Column(db.String(20))  # hex color
     is_active = db.Column(db.Boolean, default=True, index=True)
     display_order = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -783,6 +785,76 @@ class LandingPageContent(db.Model):
 
     def __repr__(self):
         return f'<LandingPageContent {self.section}>'
+
+
+class PublicAnnouncement(db.Model):
+    """Avisos e anúncios públicos na landing page"""
+    __tablename__ = 'public_announcements'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    announcement_type = db.Column(db.String(20), default='info', index=True)  # info, warning, success, event
+    icon = db.Column(db.String(50))  # Font Awesome icon
+    priority = db.Column(db.Integer, default=0)  # Higher = more important
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    show_on_homepage = db.Column(db.Boolean, default=True)
+    valid_from = db.Column(db.DateTime, default=datetime.utcnow)
+    valid_until = db.Column(db.DateTime)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    creator = db.relationship('User', backref=db.backref('announcements', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<PublicAnnouncement {self.title}>'
+
+    __table_args__ = (
+        db.Index('idx_announcement_active_priority', 'is_active', 'priority'),
+    )
+
+
+class LandingPageTestimonial(db.Model):
+    """Depoimentos de alunos para a landing page"""
+    __tablename__ = 'landing_page_testimonials'
+
+    id = db.Column(db.Integer, primary_key=True)
+    student_name = db.Column(db.String(200), nullable=False)
+    student_photo = db.Column(db.String(500))
+    instrument = db.Column(db.String(100))
+    testimonial = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Integer, default=5)  # 1-5 stars
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    display_order = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    approved_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    approver = db.relationship('User', backref=db.backref('approved_testimonials', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<Testimonial {self.student_name}>'
+
+
+class LandingPageGallery(db.Model):
+    """Galeria de fotos da escola"""
+    __tablename__ = 'landing_page_gallery'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200))
+    description = db.Column(db.Text)
+    image_url = db.Column(db.String(500), nullable=False)
+    category = db.Column(db.String(50), index=True)  # recital, class, event, facility
+    is_featured = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    display_order = db.Column(db.Integer, default=0)
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    uploader = db.relationship('User', backref=db.backref('gallery_uploads', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<GalleryImage {self.title}>'
 
 
 class LandingPageFeature(db.Model):

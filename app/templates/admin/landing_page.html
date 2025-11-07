@@ -1,206 +1,307 @@
+
 {% extends "base.html" %}
 
-{% block title %}Editar Landing Page - Admin{% endblock %}
+{% block title %}Gestão de Conteúdo - Admin{% endblock %}
 
 {% block content %}
 <style>
-/* Estilos para garantir visibilidade dos inputs */
+.tab-button {
+    padding: 0.75rem 1.5rem;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab-button.active {
+    border-bottom-color: #2563eb;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
 .form-control {
     width: 100%;
     padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
     font-size: 1rem;
-    line-height: 1.5;
-    color: #212529;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #ced4da;
-    border-radius: 0.375rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    margin-bottom: 0.5rem;
 }
 
 .form-control:focus {
-    color: #212529;
-    background-color: #fff;
-    border-color: #86b7fe;
-    outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.form-control::placeholder {
-    color: #6c757d;
-    opacity: 1;
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    text-align: center;
 }
 
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #212529;
-}
-
-textarea.form-control {
-    resize: vertical;
-    min-height: 100px;
-}
-
-input[type="number"].form-control,
-input[type="text"].form-control {
-    -webkit-appearance: none;
-    -moz-appearance: textfield;
-    appearance: none;
-}
-
-.form-check-input {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-right: 0.5rem;
-    cursor: pointer;
-    border: 1px solid #ced4da;
-    border-radius: 0.25rem;
-}
-
-.form-check-label {
-    cursor: pointer;
-    user-select: none;
-}
-
-small.text-gray-600 {
-    display: block;
-    margin-top: 0.25rem;
-    color: #6c757d;
-    font-size: 0.875rem;
-}
+.announcement-type-info { background-color: #dbeafe; color: #1e40af; }
+.announcement-type-warning { background-color: #fef3c7; color: #92400e; }
+.announcement-type-success { background-color: #d1fae5; color: #065f46; }
+.announcement-type-event { background-color: #e0e7ff; color: #3730a3; }
 </style>
 
 <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
-    <div class="flex items-center justify-between mb-8">
-        <h1 class="text-3xl font-bold">Editar Landing Page</h1>
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">Gestão de Conteúdo da Landing Page</h1>
+            <p class="text-gray-600">Controle total sobre o conteúdo público do site</p>
+        </div>
         <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Voltar
         </a>
     </div>
 
-    <!-- Seção Hero -->
-    <div class="card mb-6">
-        <div class="card-header">
-            <h2 class="text-xl font-bold">Seção Principal (Hero)</h2>
+    <!-- Estatísticas -->
+    <div class="grid md:grid-cols-5 gap-4 mb-6">
+        <div class="stats-card">
+            <div class="text-3xl mb-2"><i class="fas fa-bullhorn"></i></div>
+            <div class="text-2xl font-bold">{{ stats.active_announcements }}</div>
+            <div class="text-sm opacity-90">Avisos Ativos</div>
         </div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('admin.update_landing_section', section='hero') }}">
-                <div class="form-group">
-                    <label for="hero_title">Título Principal</label>
-                    <input type="text" class="form-control" id="hero_title" name="title" 
-                           value="{{ hero.title if hero else '' }}" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="hero_subtitle">Subtítulo</label>
-                    <textarea class="form-control" id="hero_subtitle" name="subtitle" 
-                              rows="3">{{ hero.subtitle if hero else '' }}</textarea>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="form-group">
-                        <label for="hero_button_text">Texto do Botão</label>
-                        <input type="text" class="form-control" id="hero_button_text" name="button_text" 
-                               value="{{ hero.button_text if hero else '' }}">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="hero_button_link">Link do Botão</label>
-                        <input type="text" class="form-control" id="hero_button_link" name="button_link" 
-                               value="{{ hero.button_link if hero else '' }}">
-                    </div>
-                </div>
-                
-                <div class="form-check mb-4">
-                    <input type="checkbox" class="form-check-input" id="hero_active" name="is_active" 
-                           {{ 'checked' if hero and hero.is_active else '' }}>
-                    <label class="form-check-label" for="hero_active">Seção Ativa</label>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Salvar Hero
-                </button>
-            </form>
+        <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="text-3xl mb-2"><i class="fas fa-star"></i></div>
+            <div class="text-2xl font-bold">{{ stats.total_testimonials }}</div>
+            <div class="text-sm opacity-90">Depoimentos</div>
+        </div>
+        <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="text-3xl mb-2"><i class="fas fa-images"></i></div>
+            <div class="text-2xl font-bold">{{ stats.total_gallery }}</div>
+            <div class="text-sm opacity-90">Fotos na Galeria</div>
+        </div>
+        <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <div class="text-3xl mb-2"><i class="fas fa-puzzle-piece"></i></div>
+            <div class="text-2xl font-bold">{{ stats.total_features }}</div>
+            <div class="text-sm opacity-90">Features</div>
+        </div>
+        <div class="stats-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+            <div class="text-3xl mb-2"><i class="fas fa-newspaper"></i></div>
+            <div class="text-2xl font-bold">{{ NewsPost.query.filter_by(is_published=True).count() if NewsPost else 0 }}</div>
+            <div class="text-sm opacity-90">Notícias Publicadas</div>
         </div>
     </div>
 
-    <!-- Features -->
-    <div class="card mb-6">
-        <div class="card-header flex items-center justify-between">
-            <h2 class="text-xl font-bold">Features/Diferenciais</h2>
-            <button type="button" class="btn btn-primary btn-sm" onclick="toggleFeatureForm()">
-                <i class="fas fa-plus"></i> Adicionar Feature
+    <!-- Tabs de Navegação -->
+    <div class="bg-white rounded-lg shadow mb-6">
+        <div class="flex border-b overflow-x-auto">
+            <button class="tab-button active" onclick="switchTab('sections')">
+                <i class="fas fa-layout mr-2"></i>Seções
+            </button>
+            <button class="tab-button" onclick="switchTab('announcements')">
+                <i class="fas fa-bullhorn mr-2"></i>Avisos
+            </button>
+            <button class="tab-button" onclick="switchTab('testimonials')">
+                <i class="fas fa-star mr-2"></i>Depoimentos
+            </button>
+            <button class="tab-button" onclick="switchTab('gallery')">
+                <i class="fas fa-images mr-2"></i>Galeria
+            </button>
+            <button class="tab-button" onclick="switchTab('features')">
+                <i class="fas fa-puzzle-piece mr-2"></i>Features
+            </button>
+            <button class="tab-button" onclick="switchTab('news')">
+                <i class="fas fa-newspaper mr-2"></i>Notícias
+            </button>
+            <button class="tab-button" onclick="switchTab('recitals')">
+                <i class="fas fa-music mr-2"></i>Recitais
             </button>
         </div>
-        <div class="card-body">
-            <!-- Formulário de adicionar feature (escondido inicialmente) -->
-            <div id="addFeatureForm" style="display: none;" class="mb-6 p-4 bg-gray-50 rounded">
-                <h3 class="font-bold mb-4">Nova Feature</h3>
-                <form method="POST" action="{{ url_for('admin.add_landing_feature') }}">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="form-group">
-                            <label>Ícone (Font Awesome)</label>
-                            <input type="text" class="form-control" name="icon" placeholder="fas fa-guitar" required>
-                            <small class="text-gray-600">Ex: fas fa-guitar, fas fa-music</small>
+
+        <!-- Tab: Seções -->
+        <div id="tab-sections" class="tab-content active p-6">
+            <h2 class="text-2xl font-bold mb-4">Gerenciar Seções da Página</h2>
+            
+            <!-- Hero Section -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="font-bold">Seção Principal (Hero)</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.update_landing_section', section='hero') }}">
+                        <div class="grid md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block font-semibold mb-2">Título</label>
+                                <input type="text" name="title" class="form-control" 
+                                       value="{{ hero.title if hero else '' }}" required>
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-2">Subtítulo</label>
+                                <input type="text" name="subtitle" class="form-control" 
+                                       value="{{ hero.subtitle if hero else '' }}">
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label>Ordem de Exibição</label>
-                            <input type="number" class="form-control" name="display_order" value="0" required>
+                        <div class="grid md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block font-semibold mb-2">Texto do Botão</label>
+                                <input type="text" name="button_text" class="form-control" 
+                                       value="{{ hero.button_text if hero else '' }}">
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-2">Link do Botão</label>
+                                <input type="text" name="button_link" class="form-control" 
+                                       value="{{ hero.button_link if hero else '' }}">
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Título</label>
-                        <input type="text" class="form-control" name="title" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Descrição</label>
-                        <textarea class="form-control" name="description" rows="3" required></textarea>
-                    </div>
-                    
-                    <div class="flex gap-2">
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="is_active" class="mr-2" 
+                                       {{ 'checked' if hero and hero.is_active else '' }}>
+                                <span>Seção Ativa</span>
+                            </label>
+                        </div>
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Adicionar
+                            <i class="fas fa-save"></i> Salvar Hero
                         </button>
-                        <button type="button" class="btn btn-secondary" onclick="toggleFeatureForm()">
-                            Cancelar
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
 
-            <!-- Lista de features -->
-            <div class="grid gap-4">
-                {% for feature in features %}
-                <div class="p-4 border rounded">
-                    <div class="flex items-start gap-4">
-                        <div class="text-3xl text-primary">
-                            <i class="{{ feature.icon }}"></i>
+            <!-- CTA Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="font-bold">Call-to-Action (CTA)</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.update_landing_section', section='cta') }}">
+                        <div class="grid md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block font-semibold mb-2">Título</label>
+                                <input type="text" name="title" class="form-control" 
+                                       value="{{ cta.title if cta else '' }}" required>
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-2">Subtítulo</label>
+                                <input type="text" name="subtitle" class="form-control" 
+                                       value="{{ cta.subtitle if cta else '' }}">
+                            </div>
                         </div>
-                        <div class="flex-1">
-                            <h4 class="font-bold">{{ feature.title }}</h4>
-                            <p class="text-gray-600 text-sm">{{ feature.description }}</p>
-                            <p class="text-xs text-gray-500 mt-2">
-                                Ordem: {{ feature.display_order }} | 
-                                Status: {{ 'Ativa' if feature.is_active else 'Inativa' }}
-                            </p>
+                        <div class="grid md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block font-semibold mb-2">Texto do Botão</label>
+                                <input type="text" name="button_text" class="form-control" 
+                                       value="{{ cta.button_text if cta else '' }}">
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-2">Link do Botão</label>
+                                <input type="text" name="button_link" class="form-control" 
+                                       value="{{ cta.button_link if cta else '' }}">
+                            </div>
                         </div>
-                        <div class="flex gap-2">
-                            <button type="button" class="btn btn-sm btn-secondary" 
-                                    onclick="editFeature({{ feature.id }})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <form method="POST" action="{{ url_for('admin.delete_landing_feature', id=feature.id) }}" 
-                                  class="inline" onsubmit="return confirm('Tem certeza?')">
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="is_active" class="mr-2" 
+                                       {{ 'checked' if cta and cta.is_active else '' }}>
+                                <span>Seção Ativa</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar CTA
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Avisos -->
+        <div id="tab-announcements" class="tab-content p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Avisos e Anúncios Públicos</h2>
+                <a href="{{ url_for('admin.create_announcement') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Novo Aviso
+                </a>
+            </div>
+            
+            <div class="space-y-4">
+                {% for ann in announcements %}
+                <div class="card announcement-type-{{ ann.announcement_type }}">
+                    <div class="card-body">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    {% if ann.icon %}
+                                    <i class="{{ ann.icon }} text-2xl"></i>
+                                    {% endif %}
+                                    <h3 class="font-bold text-lg">{{ ann.title }}</h3>
+                                    <span class="badge">Prioridade: {{ ann.priority }}</span>
+                                </div>
+                                <p class="mb-2">{{ ann.content[:200] }}{% if ann.content|length > 200 %}...{% endif %}</p>
+                                <div class="text-sm">
+                                    <span class="mr-4">
+                                        <i class="fas fa-calendar"></i>
+                                        {{ ann.created_at.strftime('%d/%m/%Y') }}
+                                    </span>
+                                    {% if ann.valid_until %}
+                                    <span class="mr-4">
+                                        <i class="fas fa-clock"></i>
+                                        Válido até {{ ann.valid_until.strftime('%d/%m/%Y') }}
+                                    </span>
+                                    {% endif %}
+                                    <span class="badge {{ 'badge-success' if ann.is_active else 'badge-secondary' }}">
+                                        {{ 'Ativo' if ann.is_active else 'Inativo' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="{{ url_for('admin.edit_announcement', id=ann.id) }}" 
+                                   class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('admin.delete_announcement', id=ann.id) }}" 
+                                      onsubmit="return confirm('Confirma exclusão?')">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center text-gray-500 py-8">Nenhum aviso cadastrado</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tab: Depoimentos -->
+        <div id="tab-testimonials" class="tab-content p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Depoimentos de Alunos</h2>
+                <a href="{{ url_for('admin.create_testimonial') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Novo Depoimento
+                </a>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+                {% for test in testimonials %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="flex items-start gap-4">
+                            <div class="text-4xl text-yellow-500">
+                                {% for i in range(test.rating) %}
+                                <i class="fas fa-star"></i>
+                                {% endfor %}
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold">{{ test.student_name }}</h4>
+                                <p class="text-sm text-gray-600">{{ test.instrument }}</p>
+                                <p class="mt-2 italic">"{{ test.testimonial }}"</p>
+                            </div>
+                            <form method="POST" action="{{ url_for('admin.delete_testimonial', id=test.id) }}" 
+                                  onsubmit="return confirm('Confirma exclusão?')">
                                 <button type="submit" class="btn btn-sm btn-danger">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -209,71 +310,137 @@ small.text-gray-600 {
                     </div>
                 </div>
                 {% else %}
-                <p class="text-gray-500 text-center py-8">Nenhuma feature cadastrada</p>
+                <p class="text-center text-gray-500 py-8 col-span-2">Nenhum depoimento cadastrado</p>
                 {% endfor %}
             </div>
         </div>
-    </div>
 
-    <!-- Seção CTA -->
-    <div class="card">
-        <div class="card-header">
-            <h2 class="text-xl font-bold">Seção de Call-to-Action (CTA)</h2>
-        </div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('admin.update_landing_section', section='cta') }}">
-                <div class="form-group">
-                    <label for="cta_title">Título</label>
-                    <input type="text" class="form-control" id="cta_title" name="title" 
-                           value="{{ cta.title if cta else '' }}" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="cta_subtitle">Subtítulo</label>
-                    <textarea class="form-control" id="cta_subtitle" name="subtitle" 
-                              rows="3">{{ cta.subtitle if cta else '' }}</textarea>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="form-group">
-                        <label for="cta_button_text">Texto do Botão</label>
-                        <input type="text" class="form-control" id="cta_button_text" name="button_text" 
-                               value="{{ cta.button_text if cta else '' }}">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="cta_button_link">Link do Botão</label>
-                        <input type="text" class="form-control" id="cta_button_link" name="button_link" 
-                               value="{{ cta.button_link if cta else '' }}">
-                    </div>
-                </div>
-                
-                <div class="form-check mb-4">
-                    <input type="checkbox" class="form-check-input" id="cta_active" name="is_active" 
-                           {{ 'checked' if cta and cta.is_active else '' }}>
-                    <label class="form-check-label" for="cta_active">Seção Ativa</label>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Salvar CTA
+        <!-- Tab: Galeria -->
+        <div id="tab-gallery" class="tab-content p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Galeria de Fotos</h2>
+                <button onclick="document.getElementById('uploadModal').style.display='block'" 
+                        class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Adicionar Foto
                 </button>
-            </form>
+            </div>
+            
+            <div class="grid md:grid-cols-4 gap-4">
+                {% for img in gallery_images %}
+                <div class="card">
+                    <img src="{{ img.image_url }}" alt="{{ img.title }}" class="w-full h-48 object-cover">
+                    <div class="card-body">
+                        <h4 class="font-bold text-sm">{{ img.title }}</h4>
+                        <p class="text-xs text-gray-600">{{ img.category }}</p>
+                        <form method="POST" action="{{ url_for('admin.delete_gallery_image', id=img.id) }}" 
+                              onsubmit="return confirm('Confirma exclusão?')" class="mt-2">
+                            <button type="submit" class="btn btn-sm btn-danger w-full">
+                                <i class="fas fa-trash"></i> Remover
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center text-gray-500 py-8 col-span-4">Nenhuma foto na galeria</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tab: Features -->
+        <div id="tab-features" class="tab-content p-6">
+            <h2 class="text-2xl font-bold mb-4">Features e Diferenciais</h2>
+            <div class="grid md:grid-cols-3 gap-4">
+                {% for feat in features %}
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="{{ feat.icon }} text-4xl text-primary mb-3"></i>
+                        <h4 class="font-bold">{{ feat.title }}</h4>
+                        <p class="text-sm text-gray-600">{{ feat.description }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tab: Notícias -->
+        <div id="tab-news" class="tab-content p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Gestão de Notícias</h2>
+                <a href="{{ url_for('admin.news') }}" class="btn btn-primary">
+                    <i class="fas fa-newspaper"></i> Ver Todas as Notícias
+                </a>
+            </div>
+            <p class="text-gray-600">Acesse o módulo completo de notícias para criar e gerenciar publicações.</p>
+        </div>
+
+        <!-- Tab: Recitais -->
+        <div id="tab-recitals" class="tab-content p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Gestão de Recitais</h2>
+                <a href="{{ url_for('admin.recitals') }}" class="btn btn-primary">
+                    <i class="fas fa-music"></i> Ver Todos os Recitais
+                </a>
+            </div>
+            <p class="text-gray-600">Acesse o módulo completo de recitais para criar e gerenciar eventos.</p>
         </div>
     </div>
 </div>
 
-<script>
-function toggleFeatureForm() {
-    const form = document.getElementById('addFeatureForm');
-    if (form.style.display === 'none' || form.style.display === '') {
-        form.style.display = 'block';
-    } else {
-        form.style.display = 'none';
-    }
-}
+<!-- Modal Upload Foto -->
+<div id="uploadModal" style="display:none;" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 class="text-xl font-bold mb-4">Adicionar Foto à Galeria</h3>
+        <form method="POST" action="{{ url_for('admin.upload_gallery_image') }}">
+            <div class="mb-4">
+                <label class="block font-semibold mb-2">Título</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+            <div class="mb-4">
+                <label class="block font-semibold mb-2">URL da Imagem</label>
+                <input type="url" name="image_url" class="form-control" required>
+                <small class="text-gray-600">Cole a URL de uma imagem hospedada</small>
+            </div>
+            <div class="mb-4">
+                <label class="block font-semibold mb-2">Categoria</label>
+                <select name="category" class="form-control">
+                    <option value="event">Evento</option>
+                    <option value="recital">Recital</option>
+                    <option value="class">Aula</option>
+                    <option value="facility">Instalações</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" name="is_featured" class="mr-2">
+                    <span>Destacar na página inicial</span>
+                </label>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary flex-1">
+                    <i class="fas fa-upload"></i> Adicionar
+                </button>
+                <button type="button" onclick="document.getElementById('uploadModal').style.display='none'" 
+                        class="btn btn-secondary">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
-function editFeature(id) {
-    alert('Funcionalidade de edição em desenvolvimento. Por enquanto, delete e recrie a feature.');
+<script>
+function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById('tab-' + tabName).classList.add('active');
+    event.target.classList.add('active');
 }
 </script>
 {% endblock %}

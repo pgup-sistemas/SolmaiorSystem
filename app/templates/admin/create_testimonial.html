@@ -1,0 +1,66 @@
+
+{% extends "base.html" %}
+
+{% block title %}Criar Depoimento - Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-2xl font-bold">Adicionar Depoimento de Aluno</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.create_testimonial') }}">
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block font-semibold mb-2">Nome do Aluno</label>
+                        <input type="text" name="student_name" class="form-control" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block font-semibold mb-2">Instrumento</label>
+                        <input type="text" name="instrument" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2">Depoimento</label>
+                    <textarea name="testimonial" rows="5" class="form-control" required></textarea>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block font-semibold mb-2">Avaliação (Estrelas)</label>
+                        <select name="rating" class="form-control">
+                            <option value="5" selected>⭐⭐⭐⭐⭐ (5 estrelas)</option>
+                            <option value="4">⭐⭐⭐⭐ (4 estrelas)</option>
+                            <option value="3">⭐⭐⭐ (3 estrelas)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block font-semibold mb-2">Ordem de Exibição</label>
+                        <input type="number" name="display_order" class="form-control" value="0">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="is_active" class="mr-2" checked>
+                        <span>Ativo</span>
+                    </label>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Adicionar Depoimento
+                    </button>
+                    <a href="{{ url_for('admin.landing_page_settings') }}" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

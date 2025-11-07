@@ -1,0 +1,77 @@
+
+{% extends "base.html" %}
+
+{% block title %}Criar Aviso - Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-2xl font-bold">Criar Novo Aviso/Anúncio</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.create_announcement') }}">
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2">Título</label>
+                    <input type="text" name="title" class="form-control" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2">Conteúdo</label>
+                    <textarea name="content" rows="5" class="form-control" required></textarea>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block font-semibold mb-2">Tipo</label>
+                        <select name="announcement_type" class="form-control">
+                            <option value="info">Informativo</option>
+                            <option value="warning">Aviso</option>
+                            <option value="success">Sucesso</option>
+                            <option value="event">Evento</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block font-semibold mb-2">Ícone (Font Awesome)</label>
+                        <input type="text" name="icon" class="form-control" placeholder="fas fa-info-circle">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block font-semibold mb-2">Prioridade</label>
+                        <input type="number" name="priority" class="form-control" value="0">
+                        <small class="text-gray-600">Maior = mais importante</small>
+                    </div>
+                    
+                    <div>
+                        <label class="block font-semibold mb-2">Válido até</label>
+                        <input type="datetime-local" name="valid_until" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="flex items-center mb-2">
+                        <input type="checkbox" name="is_active" class="mr-2" checked>
+                        <span>Ativo</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="show_on_homepage" class="mr-2" checked>
+                        <span>Exibir na página inicial</span>
+                    </label>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Criar Aviso
+                    </button>
+                    <a href="{{ url_for('admin.landing_page_settings') }}" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
