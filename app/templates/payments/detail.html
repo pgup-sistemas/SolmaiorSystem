@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Pagamento - Sistema Sol Maior{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Detalhes do Pagamento</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h2 class="text-lg font-semibold mb-4">Informações do Pagamento</h2>
+                    <dl class="space-y-2">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Aluno</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ payment.enrollment.student.user.full_name }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Mês de Referência</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ payment.reference_month.strftime('%B de %Y') }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Vencimento</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ payment.due_date.strftime('%d/%m/%Y') }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Status</dt>
+                            <dd class="mt-1">
+                                {% if payment.status == 'paid' %}
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Pago</span>
+                                {% elif payment.status == 'pending' %}
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pendente</span>
+                                {% else %}
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">{{ payment.status }}</span>
+                                {% endif %}
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+                
+                <div>
+                    <h2 class="text-lg font-semibold mb-4">Valores</h2>
+                    <dl class="space-y-2">
+                        <div class="flex justify-between">
+                            <dt class="text-sm font-medium text-gray-500">Valor Base</dt>
+                            <dd class="text-sm text-gray-900">R$ {{ "%.2f"|format(payment.amount) }}</dd>
+                        </div>
+                        {% if payment.discount > 0 %}
+                        <div class="flex justify-between">
+                            <dt class="text-sm font-medium text-gray-500">Desconto</dt>
+                            <dd class="text-sm text-green-600">- R$ {{ "%.2f"|format(payment.discount) }}</dd>
+                        </div>
+                        {% endif %}
+                        {% if payment.late_fee > 0 %}
+                        <div class="flex justify-between">
+                            <dt class="text-sm font-medium text-gray-500">Multa/Juros</dt>
+                            <dd class="text-sm text-red-600">+ R$ {{ "%.2f"|format(payment.late_fee) }}</dd>
+                        </div>
+                        {% endif %}
+                        <div class="flex justify-between pt-4 border-t border-gray-200">
+                            <dt class="text-base font-semibold text-gray-900">Valor Total</dt>
+                            <dd class="text-base font-bold text-blue-600">R$ {{ "%.2f"|format(payment.total_amount) }}</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        {% if payment.status != 'paid' and payment.status != 'cancelled' %}
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Pagar com Cartão de Crédito</h2>
+            
+            <div class="mb-6">
+                <p class="text-sm text-gray-600 mb-4">
+                    Pagamento seguro processado pela Stripe. Seus dados de cartão são criptografados e não são armazenados em nossos servidores.
+                </p>
+                
+                <div class="flex items-center space-x-4 text-sm text-gray-500">
+                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    <span>Conexão Segura SSL</span>
+                </div>
+            </div>
+            
+            <button id="checkout-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                Pagar R$ {{ "%.2f"|format(payment.total_amount) }}
+            </button>
+            
+            <div id="loading" class="hidden text-center py-4">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p class="mt-2 text-gray-600">Processando...</p>
+            </div>
+            
+            <div id="error-message" class="hidden mt-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700"></div>
+        </div>
+        {% endif %}
+        
+        {% if payment.status == 'paid' %}
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+            <div class="flex items-center">
+                <svg class="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                    <h3 class="text-lg font-semibold text-green-800">Pagamento Confirmado</h3>
+                    <p class="text-sm text-green-700">Pago em {{ payment.payment_date.strftime('%d/%m/%Y') }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="mt-6">
+            <a href="{{ url_for('student.dashboard') }}" class="text-blue-600 hover:text-blue-800">
+                ← Voltar para o painel
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    const stripePublicKey = '{{ stripe_public_key }}';
+    const paymentId = {{ payment.id }};
+    
+    if (stripePublicKey) {
+        const stripe = Stripe(stripePublicKey);
+        const checkoutButton = document.getElementById('checkout-button');
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error-message');
+        
+        checkoutButton.addEventListener('click', async () => {
+            checkoutButton.classList.add('hidden');
+            loadingDiv.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+            
+            try {
+                const response = await fetch(`/payments/payment/${paymentId}/checkout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error(data.error || 'Erro ao criar sessão de pagamento');
+                }
+            } catch (error) {
+                loadingDiv.classList.add('hidden');
+                checkoutButton.classList.remove('hidden');
+                errorDiv.textContent = error.message;
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    } else {
+        const checkoutButton = document.getElementById('checkout-button');
+        if (checkoutButton) {
+            checkoutButton.disabled = true;
+            checkoutButton.textContent = 'Stripe não configurado';
+            checkoutButton.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+</script>
+{% endblock %}

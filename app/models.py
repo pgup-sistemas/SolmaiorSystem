@@ -105,6 +105,10 @@ class Student(db.Model):
     photo_url = db.Column(db.String(500))
     is_active = db.Column(db.Boolean, default=True, index=True)
     notes = db.Column(db.Text)
+    
+    # Integração com Stripe
+    stripe_customer_id = db.Column(db.String(255), unique=True, index=True)
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
@@ -419,6 +423,16 @@ class Payment(db.Model):
     installment_number = db.Column(db.Integer)  # 1 de 3, 2 de 3, etc
     installment_total = db.Column(db.Integer)  # Total de parcelas
     parent_payment_id = db.Column(db.Integer, db.ForeignKey('payments.id'))  # Para rastrear parcelamentos
+    
+    # Campos para integração com Stripe
+    stripe_customer_id = db.Column(db.String(255), index=True)  # ID do cliente no Stripe
+    stripe_payment_intent_id = db.Column(db.String(255), unique=True, index=True)  # ID do payment intent
+    stripe_charge_id = db.Column(db.String(255), index=True)  # ID da cobrança
+    stripe_payment_method_id = db.Column(db.String(255))  # ID do método de pagamento
+    stripe_status = db.Column(db.String(50))  # Status do pagamento no Stripe
+    stripe_client_secret = db.Column(db.String(500))  # Client secret para confirmar pagamento
+    stripe_webhook_received = db.Column(db.Boolean, default=False)  # Se webhook foi recebido
+    stripe_error_message = db.Column(db.Text)  # Mensagem de erro do Stripe, se houver
     
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

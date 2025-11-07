@@ -10,10 +10,6 @@ packages = ["freetype", "glibcLocales"]
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 41679
-externalPort = 3000
-
 [workflows]
 runButton = "Project"
 

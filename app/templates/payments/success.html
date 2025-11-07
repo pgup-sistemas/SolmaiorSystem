@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Pagamento Realizado com Sucesso - Sistema Sol Maior{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md p-8 text-center">
+            <div class="mb-6">
+                <svg class="w-20 h-20 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">Pagamento Realizado com Sucesso!</h1>
+            
+            <p class="text-gray-600 mb-8">
+                Seu pagamento foi processado com sucesso. Você receberá um comprovante por email em breve.
+            </p>
+            
+            {% if payment %}
+            <div class="bg-gray-50 rounded-lg p-6 mb-8 text-left">
+                <h2 class="text-lg font-semibold mb-4 text-center">Detalhes do Pagamento</h2>
+                <dl class="space-y-2">
+                    <div class="flex justify-between">
+                        <dt class="text-sm font-medium text-gray-500">Valor Pago</dt>
+                        <dd class="text-sm font-semibold text-gray-900">R$ {{ "%.2f"|format(payment.total_amount) }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm font-medium text-gray-500">Referência</dt>
+                        <dd class="text-sm text-gray-900">{{ payment.reference_month.strftime('%B de %Y') }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm font-medium text-gray-500">Data</dt>
+                        <dd class="text-sm text-gray-900">{{ payment.payment_date.strftime('%d/%m/%Y') if payment.payment_date else 'Processando...' }}</dd>
+                    </div>
+                </dl>
+            </div>
+            {% endif %}
+            
+            <div class="space-y-4">
+                <a href="{{ url_for('student.dashboard') }}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+                    Voltar para o Painel
+                </a>
+                
+                <a href="{{ url_for('financial.receipts') }}" class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg transition duration-200">
+                    Ver Comprovante
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
