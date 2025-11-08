@@ -1,0 +1,227 @@
+# MkDocs configuration for Sol Maior Music School System
+site_name: Sistema Sol Maior - Escola de Música
+site_description: Documentação completa do sistema de gestão escolar para escolas de música
+site_author: Sol Maior
+site_url: https://solmaior.com.br/docs
+
+# Repository
+repo_name: SolmaiorSystem-1
+repo_url: https://github.com/solmaior/SolmaiorSystem-1
+
+# Theme configuration
+theme:
+  name: material
+  language: pt-BR
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Mudar para modo automático
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Mudar para modo escuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Mudar para modo claro
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.footnote.tooltips
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - toc.integrate
+
+# Plugins
+plugins:
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - minify:
+      minify_html: true
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+  - awesome-pages
+
+# Customization
+extra:
+  version:
+    provider: mike
+    default: latest
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/solmaior
+    - icon: fontawesome/solid/globe
+      link: https://solmaior.com.br
+    - icon: fontawesome/solid/envelope
+      link: mailto:contato@solmaior.com.br
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - meta
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Link para esta seção
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: solmaior
+      repo: SolmaiorSystem-1
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Page tree
+nav:
+  - Início: index.md
+  - Visão Geral:
+      - O que é o Sistema Sol Maior: overview/o-que-e.md
+      - Funcionalidades Principais: overview/funcionalidades.md
+      - Arquitetura do Sistema: overview/arquitetura.md
+  - Instalação e Configuração:
+      - Pré-requisitos: install/prerequisites.md
+      - Instalação: install/installation.md
+      - Configuração Inicial: install/configuration.md
+      - Primeiro Acesso: install/first-access.md
+  - Guias de Usuário:
+      - Administrador:
+          - Dashboard Administrativo: user-guides/admin/dashboard.md
+          - Gerenciamento de Usuários: user-guides/admin/users.md
+          - Configurações do Sistema: user-guides/admin/settings.md
+          - Relatórios e Analytics: user-guides/admin/reports.md
+      - Secretaria:
+          - Dashboard da Secretaria: user-guides/secretary/dashboard.md
+          - Agendamento de Aulas: user-guides/secretary/scheduling.md
+          - Gestão de Alunos: user-guides/secretary/students.md
+          - Fila de Espera: user-guides/secretary/waitlist.md
+          - Reposições e Faltas: user-guides/secretary/makeup.md
+      - Professores:
+          - Dashboard do Professor: user-guides/teacher/dashboard.md
+          - Gerenciamento de Aulas: user-guides/teacher/lessons.md
+          - Controle de Presença: user-guides/teacher/attendance.md
+          - Notas e Observações: user-guides/teacher/notes.md
+          - Disponibilidade: user-guides/teacher/availability.md
+      - Alunos:
+          - Portal do Aluno: user-guides/student/portal.md
+          - Agendamento de Aulas: user-guides/student/scheduling.md
+          - Histórico Financeiro: user-guides/student/financial.md
+          - Solicitação de Reposições: user-guides/student/makeup.md
+          - Recitais e Eventos: user-guides/student/recitals.md
+      - Financeiro:
+          - Dashboard Financeiro: user-guides/financial/dashboard.md
+          - Gestão de Pagamentos: user-guides/financial/payments.md
+          - Controle de Mensalidades: user-guides/financial/enrollments.md
+          - Relatórios Financeiros: user-guides/financial/reports.md
+          - Integrações de Pagamento: user-guides/financial/gateways.md
+  - Módulos do Sistema:
+      - Acadêmico:
+          - Agendamento de Aulas: modules/academic/scheduling.md
+          - Controle de Presença: modules/academic/attendance.md
+          - Sistema de Reposições: modules/academic/makeup.md
+          - Fila de Espera: modules/academic/waitlist.md
+      - Financeiro:
+          - Gestão de Mensalidades: modules/finance/enrollments.md
+          - Controle de Pagamentos: modules/finance/payments.md
+          - Descontos e Promoções: modules/finance/discounts.md
+          - Relatórios Financeiros: modules/finance/reports.md
+          - Gateways de Pagamento: modules/finance/gateways.md
+      - Comunicação:
+          - Sistema de Notificações: modules/communication/notifications.md
+          - Landing Page Dinâmica: modules/communication/landing-page.md
+          - Portal de Notícias: modules/communication/news.md
+          - Sistema de Emails: modules/communication/email.md
+      - Recitais e Eventos:
+          - Gestão de Recitais: modules/recitals/management.md
+          - Sistema de Inscrições: modules/recitals/registrations.md
+          - Controle de Participações: modules/recitals/participants.md
+          - Certificados: modules/recitals/certificates.md
+      - Relatórios e Analytics:
+          - Dashboard Executivo: modules/reports/dashboard.md
+          - Indicadores Preditivos: modules/reports/predictive.md
+          - Relatórios Operacionais: modules/reports/operational.md
+          - Analytics Avançado: modules/reports/analytics.md
+      - Configurações:
+          - Perfis de Usuário: modules/settings/users.md
+          - Políticas do Sistema: modules/settings/policies.md
+          - Integrações Externas: modules/settings/integrations.md
+          - Backup e Segurança: modules/settings/backup.md
+  - API e Desenvolvimento:
+      - API REST: api/rest-api.md
+      - Webhooks: api/webhooks.md
+      - Integrações: api/integrations.md
+      - Desenvolvimento: api/development.md
+  - Suporte e FAQ:
+      - Perguntas Frequentes: support/faq.md
+      - Solução de Problemas: support/troubleshooting.md
+      - Contato e Suporte: support/contact.md
+      - Glossário: support/glossary.md
+  - Sobre:
+      - Sobre o Projeto: about/project.md
+      - Equipe: about/team.md
+      - Licença: about/license.md
+      - Changelog: about/changelog.md

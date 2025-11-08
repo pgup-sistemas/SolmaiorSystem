@@ -64,7 +64,86 @@ def dashboard():
 @financial_required
 def enrollments():
     enrollments = Enrollment.query.order_by(Enrollment.created_at.desc()).all()
-    return render_template('financial/enrollments.html', enrollments=enrollments)
+
+    # Verificar consistência Enrollment ↔ Student.is_active
+    consistency_issues = []
+    for enrollment in enrollments:
+        student = enrollment.student
+        if enrollment.status == 'active' and not student.is_active:
+            consistency_issues.append({
+                'enrollment': enrollment,
+                'issue': 'Matrícula ativa mas aluno inativo'
+            })
+        elif enrollment.status in ['cancelled', 'completed'] and student.is_active:
+            # Verificar se há outras matrículas ativas
+            active_enrollments = Enrollment.query.filter(
+                Enrollment.student_id == student.id,
+                Enrollment.status == 'active'
+            ).count()
+            if active_enrollments == 0:
+                consistency_issues.append({
+                    'enrollment': enrollment,
+                    'issue': 'Matrícula inativa mas aluno ativo (sem outras matrículas ativas)'
+                })
+
+    return render_template('financial/enrollments.html',
+                          enrollments=enrollments,
+                          consistency_issues=consistency_issues)
+
+
+@bp.route('/enrollments/<int:enrollment_id>/fix-consistency', methods=['POST'])
+@login_required
+@financial_required
+def fix_enrollment_consistency(enrollment_id):
+    """Corrigir inconsistência Enrollment ↔ Student.is_active"""
+    enrollment = Enrollment.query.get_or_404(enrollment_id)
+    student = enrollment.student
+
+    try:
+        from app.services import FinancialService
+
+        if enrollment.status == 'active' and not student.is_active:
+            # Ativar aluno
+            student.is_active = True
+            student.updated_at = datetime.utcnow()
+
+            FinancialService.log_financial_action(
+                current_user.id, 'update', 'Student', student.id,
+                {'is_active': False}, {'is_active': True},
+                'Correção de consistência: ativação por matrícula ativa', None, None
+            )
+
+            flash('Aluno ativado para manter consistência com matrícula ativa.', 'success')
+
+        elif enrollment.status in ['cancelled', 'completed'] and student.is_active:
+            # Verificar se há outras matrículas ativas
+            active_enrollments = Enrollment.query.filter(
+                Enrollment.student_id == student.id,
+                Enrollment.status == 'active',
+                Enrollment.id != enrollment.id
+            ).count()
+
+            if active_enrollments == 0:
+                # Desativar aluno
+                student.is_active = False
+                student.updated_at = datetime.utcnow()
+
+                FinancialService.log_financial_action(
+                    current_user.id, 'update', 'Student', student.id,
+                    {'is_active': True}, {'is_active': False},
+                    'Correção de consistência: desativação por falta de matrículas ativas', None, None
+                )
+
+                flash('Aluno desativado para manter consistência com matrículas inativas.', 'success')
+            else:
+                flash('Aluno mantido ativo pois possui outras matrículas ativas.', 'info')
+
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao corrigir consistência: {str(e)}', 'error')
+
+    return redirect(url_for('financial.enrollments'))
 
 @bp.route('/enrollments/create', methods=['GET', 'POST'])
 @login_required
@@ -72,21 +151,37 @@ def enrollments():
 def create_enrollment():
     if request.method == 'POST':
         try:
+            student_id = request.form.get('student_id', type=int)
+            student = Student.query.get(student_id)
+
             enrollment = Enrollment(
-                student_id=request.form.get('student_id', type=int),
+                student_id=student_id,
                 plan_type=request.form.get('plan_type'),
                 monthly_value=request.form.get('monthly_value', type=float),
                 start_date=datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date(),
                 end_date=datetime.strptime(request.form.get('end_date'), '%Y-%m-%d').date() if request.form.get('end_date') else None,
                 status='active'
             )
-            
+
             db.session.add(enrollment)
             db.session.flush()
-            
+
             # Gerar mensalidades automáticas
             generate_monthly_payments(enrollment)
-            
+
+            # Trigger: Garantir consistência Enrollment ↔ Student.is_active
+            if enrollment.status == 'active' and not student.is_active:
+                student.is_active = True
+                student.updated_at = datetime.utcnow()
+
+                # Log da mudança
+                from app.services import FinancialService
+                FinancialService.log_financial_action(
+                    current_user.id, 'update', 'Student', student.id,
+                    {'is_active': False}, {'is_active': True},
+                    'Ativação automática por criação de matrícula ativa', None, None
+                )
+
             db.session.commit()
             flash('Matrícula criada com sucesso!', 'success')
             return redirect(url_for('financial.enrollments'))
@@ -94,7 +189,7 @@ def create_enrollment():
             db.session.rollback()
             flash(f'Erro ao criar matrícula: {str(e)}', 'error')
             return redirect(url_for('financial.create_enrollment'))
-    
+
     students = Student.query.all()
     return render_template('financial/create_enrollment.html', students=students)
 
@@ -116,28 +211,131 @@ def payments():
 @financial_required
 def register_payment(payment_id):
     payment = Payment.query.get_or_404(payment_id)
-    
+
     try:
         payment.payment_date = datetime.strptime(request.form.get('payment_date'), '%Y-%m-%d').date()
         payment.payment_method = request.form.get('payment_method')
         payment.status = 'paid'
-        
+
         # Calcular multa por atraso
         if payment.payment_date > payment.due_date:
             days_late = (payment.payment_date - payment.due_date).days
             payment.late_fee = payment.amount * 0.02 + (payment.amount * 0.001 * days_late)
-        
+
         payment.total_amount = payment.amount - payment.discount + payment.late_fee
         payment.receipt_number = f'REC{datetime.now().year}{payment.id:06d}'
         payment.notes = request.form.get('notes')
-        
+
+        # Trigger: Verificar se deve reativar aluno após pagamento
+        enrollment = payment.enrollment
+        student = enrollment.student
+
+        # Se o aluno estava inativo e a matrícula está ativa, verificar se deve reativar
+        if not student.is_active and enrollment.status == 'active':
+            # Verificar se ainda há pagamentos pendentes graves
+            overdue_90_days = Payment.query.filter(
+                Payment.enrollment_id == enrollment.id,
+                Payment.status == 'pending',
+                Payment.due_date < datetime.now().date() - timedelta(days=90)
+            ).count()
+
+            if overdue_90_days == 0:
+                # Trigger automático: reativar aluno após regularização
+                student.is_active = True
+                student.updated_at = datetime.utcnow()
+
+                # Log da mudança
+                from app.services import FinancialService
+                FinancialService.log_financial_action(
+                    current_user.id, 'update', 'Student', student.id,
+                    {'is_active': False}, {'is_active': True},
+                    'Reativação automática após regularização de pagamentos', None, None
+                )
+
+                # Criar notificação
+                notification = ScheduledNotification(
+                    notification_type='student_reactivated',
+                    recipient_id=student.user_id,
+                    recipient_email=student.user.email,
+                    subject='Conta reativada',
+                    message=f'Olá {student.user.full_name},\n\n'
+                           f'Sua conta foi reativada após a regularização dos pagamentos pendentes.\n\n'
+                           f'Bem-vindo de volta!\n\n'
+                           f'Atenciosamente,\nEscola de Música Solmaior',
+                    scheduled_for=datetime.utcnow(),
+                    status='pending'
+                )
+                db.session.add(notification)
+
         db.session.commit()
         flash('Pagamento registrado com sucesso!', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Erro ao registrar pagamento: {str(e)}', 'error')
-    
+
     return redirect(url_for('financial.payments'))
+
+
+@bp.route('/payments/<int:payment_id>/gateway-payment', methods=['POST'])
+@login_required
+@financial_required
+def create_gateway_payment(payment_id):
+    """Criar pagamento via gateway de pagamento"""
+    payment = Payment.query.get_or_404(payment_id)
+
+    if payment.status != 'pending':
+        flash('Apenas pagamentos pendentes podem ser processados via gateway.', 'error')
+        return redirect(url_for('financial.payments'))
+
+    gateway_name = request.form.get('gateway', 'mercado_pago')
+
+    try:
+        from app.services import payment_gateway_manager
+
+        result = payment_gateway_manager.create_payment(
+            payment,
+            gateway_name=gateway_name,
+            return_url=request.url_root + url_for('financial.payments'),
+            cancel_url=request.url_root + url_for('financial.payments')
+        )
+
+        if result['success']:
+            if result.get('payment_url'):
+                flash(f'Pagamento criado! Redirecionando para {gateway_name.title()}...', 'success')
+                return redirect(result['payment_url'])
+            elif result.get('client_secret'):
+                # Para Stripe - renderizar página de checkout
+                return render_template('financial/stripe_checkout.html',
+                                     payment=payment,
+                                     client_secret=result['client_secret'])
+            else:
+                flash('Pagamento criado com sucesso!', 'success')
+        else:
+            flash(f'Erro ao criar pagamento: {result.get("error", "Erro desconhecido")}', 'error')
+
+    except Exception as e:
+        flash(f'Erro ao processar pagamento via gateway: {str(e)}', 'error')
+
+    return redirect(url_for('financial.payments'))
+
+
+@bp.route('/webhooks/<gateway_name>', methods=['POST'])
+def process_gateway_webhook(gateway_name):
+    """Processar webhooks dos gateways de pagamento"""
+    try:
+        from app.services import payment_gateway_manager
+
+        webhook_data = request.get_json() if request.is_json else request.form.to_dict()
+
+        result = payment_gateway_manager.process_webhook(gateway_name, webhook_data)
+
+        if result['success']:
+            return jsonify({'status': 'success'}), 200
+        else:
+            return jsonify({'status': 'error', 'message': result.get('error')}), 400
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @bp.route('/payments/<int:payment_id>/receipt')
 @login_required

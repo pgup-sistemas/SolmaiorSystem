@@ -280,51 +280,103 @@ def process_pending_notifications():
             ScheduledNotification.status == 'pending',
             ScheduledNotification.scheduled_for <= datetime.utcnow()
         ).limit(100).all()
-        
+
         sent_count = 0
         failed_count = 0
-        
+
         for notification in pending_notifications:
             try:
-                # Enviar email
-                success = send_email(
-                    notification.recipient_email,
-                    notification.subject,
-                    notification.message
-                )
-                
+                success = False
+
+                # Enviar por email se configurado
+                if notification.recipient_email:
+                    success = send_email(
+                        notification.recipient_email,
+                        notification.subject,
+                        notification.message
+                    )
+
+                # TODO: Implementar envio por SMS e push notification
+                # if notification.recipient_phone:
+                #     send_sms(notification.recipient_phone, notification.message)
+
                 if success:
                     notification.status = 'sent'
                     notification.sent_at = datetime.utcnow()
                     sent_count += 1
                 else:
                     notification.status = 'failed'
-                    notification.error_message = 'Falha ao enviar email'
+                    notification.error_message = 'Falha ao enviar notificação'
                     notification.retry_count += 1
                     failed_count += 1
-                    
+
                     # Reagendar se não excedeu limite de tentativas
                     if notification.retry_count < 3:
                         notification.status = 'pending'
                         notification.scheduled_for = datetime.utcnow() + timedelta(hours=1)
-            
+
             except Exception as e:
                 notification.status = 'failed'
                 notification.error_message = str(e)
                 notification.retry_count += 1
                 failed_count += 1
                 logger.error(f'Erro ao processar notificação {notification.id}: {str(e)}')
-        
+
         db.session.commit()
         logger.info(f'Processadas {len(pending_notifications)} notificações: '
                    f'{sent_count} enviadas, {failed_count} falharam')
-        
+
         return {'sent': sent_count, 'failed': failed_count}
-    
+
     except Exception as e:
         db.session.rollback()
         logger.error(f'Erro ao processar notificações: {str(e)}')
         return {'sent': 0, 'failed': 0}
+
+
+def send_bulk_notifications():
+    """
+    Enviar notificações em lote para campanhas
+    """
+    try:
+        # Exemplo: lembretes de pagamento para todos os alunos com pagamentos pendentes
+        pending_payments = Payment.query.filter_by(status='pending').all()
+
+        notifications_created = 0
+        for payment in pending_payments:
+            student = payment.enrollment.student
+
+            # Verificar se já existe lembrete hoje
+            existing = ScheduledNotification.query.filter(
+                ScheduledNotification.recipient_id == student.user_id,
+                ScheduledNotification.notification_type == 'payment_reminder_bulk',
+                func.date(ScheduledNotification.scheduled_for) == datetime.now().date()
+            ).first()
+
+            if not existing:
+                notification = ScheduledNotification(
+                    notification_type='payment_reminder_bulk',
+                    recipient_id=student.user_id,
+                    recipient_email=student.user.email,
+                    subject='Lembrete: Você tem pagamentos pendentes',
+                    message=f'Olá {student.user.full_name},\n\n'
+                           f'Identificamos que você possui pagamentos pendentes.\n'
+                           f'Acesse o sistema para visualizar e regularizar.\n\n'
+                           f'Atenciosamente,\nEscola de Música Solmaior',
+                    scheduled_for=datetime.utcnow() + timedelta(hours=2),  # Enviar em 2 horas
+                    status='pending'
+                )
+                db.session.add(notification)
+                notifications_created += 1
+
+        db.session.commit()
+        logger.info(f'Criadas {notifications_created} notificações em lote')
+        return notifications_created
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Erro ao enviar notificações em lote: {str(e)}')
+        return 0
 
 
 def run_daily_tasks():
@@ -333,15 +385,44 @@ def run_daily_tasks():
     Deve ser agendado para rodar uma vez por dia (ex: 8h da manhã)
     """
     logger.info('Iniciando tarefas diárias...')
-    
+
     results = {
         'lesson_reminders': create_lesson_reminders(),
         'automatic_absences': mark_automatic_absences(),
-        'payment_reminders': send_payment_reminders()
+        'payment_reminders': send_payment_reminders(),
+        'consistency_checks': run_consistency_checks(),
+        'predictive_updates': update_predictive_indicators()
     }
-    
+
     logger.info(f'Tarefas diárias concluídas: {results}')
     return results
+
+
+def run_consistency_checks():
+    """Executar verificações de consistência diárias"""
+    try:
+        from app.services import EnrollmentService
+
+        # Verificar consistência Enrollment ↔ Student.is_active
+        issues_fixed = EnrollmentService.check_and_fix_consistency()
+        logger.info(f'Verificações de consistência: {issues_fixed} problemas corrigidos')
+        return issues_fixed
+    except Exception as e:
+        logger.error(f'Erro nas verificações de consistência: {str(e)}')
+        return 0
+
+
+def update_predictive_indicators():
+    """Atualizar indicadores preditivos"""
+    try:
+        from app.services import PredictiveService
+
+        results = PredictiveService.update_all_predictive_indicators()
+        logger.info(f'Indicadores preditivos atualizados: {results}')
+        return results
+    except Exception as e:
+        logger.error(f'Erro ao atualizar indicadores preditivos: {str(e)}')
+        return {}
 
 
 def run_hourly_tasks():
